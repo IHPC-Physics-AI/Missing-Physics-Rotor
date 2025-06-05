@@ -1,1 +1,1 @@
-This folder is for a single rotor system
+## Single ODE system for a Spinning Rotor

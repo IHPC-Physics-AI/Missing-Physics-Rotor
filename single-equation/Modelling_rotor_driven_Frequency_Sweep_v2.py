@@ -145,3 +145,32 @@ axs[2].grid(True)
 # Adjust layout
 plt.tight_layout()
 plt.show()
+
+##PLOT OF THETA AND F AGAINST TORQUE##
+
+# Generate 1D arrays
+theta_test = np.linspace(0, 2 * np.pi, 100)  # Shape (100,)
+f_test = np.linspace(0.5, 8.5, 100)          # Shape (100,)
+
+# Compute torque (replace with your actual function)
+torque_true = np.array([compute_torques_scalar(theta, t=20.0, f=f) for theta, f in zip(theta_test.squeeze(), f_test.squeeze())])
+
+print(torque_true)
+
+# Plot
+fig, ax1 = plt.subplots(figsize=(10, 6))
+ax1.plot(theta_test, torque_true, label='Torque vs. Theta', color='blue')
+ax1.set_xlabel("Theta (radians)")
+ax1.set_ylabel("Torque")
+ax1.legend()
+
+# Add frequency axis
+ax2 = ax1.twiny()
+ax2.set_xlim(ax1.get_xlim())
+ax2.set_xticks(theta_test[::20])  # Subsample theta positions
+ax2.set_xticklabels(f_test[::20])  # Label with corresponding frequencies. This sets the limits of the new x-axis (`ax2`) to be the same as the limits of the original x-axis (`ax1`). This ensures that the scales align vertically between the two axes.
+ax2.set_xlabel("Frequency (Hz)", color='red')  
+ax2.tick_params(axis='x', colors='red')
+
+plt.tight_layout()
+plt.show()

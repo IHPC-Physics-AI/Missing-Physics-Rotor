@@ -1,0 +1,143 @@
+import jax
+import jax.numpy as jnp
+from flax import linen as nn
+from flax.training import train_state
+import optax
+from functools import partial
+import matplotlib.pyplot as plt
+# Initialize random key
+rng = jax.random.PRNGKey(42)
+
+# Constants
+I = 4.667e-10  # Moment of inertia (kg·m²)
+gamma = 0.118  # Friction coefficient (rad/s)
+c = I * gamma  # Damping coefficient (N·m·s)
+epsilon = 8.854e-12  # Permittivity (F/m)
+A = 2e-6  # Effective overlap area between electrodes and rotor arms (m²)
+V0 = 600  # Peak voltage (V)
+R = 0.005  # Radius of rotor (m)
+d0 = 0.001  # Baseline distance (m)
+
+# Rotor arms and electrode angles
+arm_angles = jnp.array([0, jnp.pi / 2, jnp.pi, (3*jnp.pi)/2])  # Arms 1 to 4. Creates 1D array.
+electrode_angles = jnp.linspace(0, 2 * jnp.pi, 6, endpoint=False) # 6 electrodes
+
+# Precomputed constants
+R2 = 2 * R
+d0_squared = d0**2
+epsilon_A = epsilon * A
+R_epsilon_A = epsilon_A * R
+
+# Precompute triangular waveforms on a time grid
+time_grid = jnp.linspace(0, 1, 1000)
+V1_table = V0 * (2 * jnp.abs(2 * (time_grid % 1) - 1) - 1)
+V2_table = jnp.roll(V1_table, jnp.floor(len(time_grid) / 3).astype(int)) #JAX has explicit emphasis on data types.
+V3_table = jnp.roll(V1_table, jnp.floor(2 * len(time_grid) / 3).astype(int))
+
+@jit #will be slower on first run, but thereafter runs will be faster.
+def electrode_voltages_precomputed(t, f):
+    # Use jnp.floor to calculate the index as a JAX array and convert to int
+    idx = jnp.floor((f * t) % 1 * len(time_grid)).astype(int) #.astype designed for arrays use
+    v1 = V1_table[idx]
+    v2 = V2_table[idx]
+    v3 = V3_table[idx]
+    return jnp.array([v1, v2, v3, v1, v2, v3])
+
+# Torque computation #Torque is a function of position
+def compute_torques_scalar(theta, t, f):
+    angle_diff = theta + arm_angles[:, jnp.newaxis] - electrode_angles[jnp.newaxis, :]
+    sin_half_angle_diff = jnp.sin(angle_diff / 2)
+    distances_squared = d0_squared + (R2 * sin_half_angle_diff)**2
+    voltages_squared = electrode_voltages_precomputed(t, f)**2
+    torques = R_epsilon_A * voltages_squared / distances_squared * jnp.sign(jnp.sin(angle_diff))
+    return jnp.sum(torques)
+
+# =============================================
+# Enhanced Scaling (Handles Tiny Values)
+# =============================================
+def scale_torque(torque):
+    """Scale torque to [-1, 1] range before normalization"""
+    scale_factor = (1e8)/6  # Adjust based on your torque magnitude
+    scaled = torque * scale_factor
+    return scaled, scale_factor
+
+# Generate and scale training data
+theta_train = jnp.linspace(0, 2*jnp.pi, 1000)
+torque_train = jax.vmap(partial(compute_torques_scalar, t=20.0, f=3.0))(theta_train)
+torque_train_scaled, torque_scale = scale_torque(torque_train)  # Now in ~[-1,1] range
+# Reshape data
+theta_train = theta_train.reshape(-1, 1)
+torque_train_scaled = torque_train_scaled.reshape(-1, 1)
+# =============================================
+# Enhanced Model Architecture
+# =============================================
+class TorquePredictor(nn.Module):
+    @nn.compact
+    def __call__(self, x):
+        x = nn.Dense(256)(x)
+
+        # Add sinusoidal transformations at this stage
+        x = jnp.sin(x*2*jnp.pi) + jnp.cos(x*2*jnp.pi)  # Apply sin and cos to output of first layer. Activation functions changes input. Multiply x by 2pi to ensure it reaches 2pi range.
+        x = nn.Dense(128)(x) #2 and 4 updated as weights for new inputs.
+        x = nn.swish(x)
+
+        # Third layer with periodic encoding
+        x = nn.Dense(64)(x)
+        x = nn.swish(x)
+
+        # Final output layer
+        return nn.Dense(1)(x)  # Linear output
+# Initialize model
+model = TorquePredictor()
+params = model.init(rng, jnp.ones((1, 1)))
+
+# =============================================
+# Robust Training Setup
+# =============================================
+optimizer = optax.chain( #Combines multiple transformations to apply to the optimisation process in order into a single transformation.
+    optax.clip(1.0),  # Gradient clipping to prevent them from exceeding a certain magnitude. Avoid issues of numerical instability caused by exploding gradients.
+    optax.adam(learning_rate=1e-4)  # Smaller learning rate
+)
+state = train_state.TrainState.create(
+    apply_fn=model.apply,
+    params=params,
+    tx=optimizer
+)
+# Training loop
+@jax.jit
+def train_step(state, batch):
+    theta_batch, torque_batch = batch
+    def loss_fn(params):
+        pred = state.apply_fn(params, theta_batch)
+        return jnp.mean((pred - torque_batch)**2)
+    loss, grads = jax.value_and_grad(loss_fn)(state.params)
+    return state.apply_gradients(grads=grads), loss
+
+for epoch in range(3000):
+    state, loss = train_step(state, (theta_train, torque_train_scaled))
+    if epoch % 100 == 0:
+        print(f"Epoch {epoch}, Loss: {loss:.4f}")
+# =============================================
+# Evaluation
+# =============================================
+theta_test = jnp.linspace(0, 2*jnp.pi, 500).reshape(-1, 1)
+torque_true = jax.vmap(partial(compute_torques_scalar, t=20.0, f=3.0))(theta_test.squeeze())
+
+# Predict and rescale
+torque_pred_scaled = model.apply(state.params, theta_test)
+torque_pred = torque_pred_scaled / torque_scale  # Reverse scaling
+# Plotting
+plt.figure(figsize=(12, 6))
+plt.plot(theta_test, torque_true, label='True Torque', linewidth=2)
+plt.plot(theta_test, torque_pred, '--', label='NN Prediction', linewidth=2)
+plt.xlabel('Theta (radians)')
+plt.ylabel('Torque (Original Scale)')
+plt.legend()
+plt.grid(True)
+plt.title('Improved Torque Prediction')
+plt.show()
+
+# Metrics
+mse = jnp.mean((torque_true - torque_pred)**2)
+print(f"Test MSE: {mse:.3e}")
+print(f"Max Error: {jnp.max(jnp.abs(torque_true - torque_pred)):.3e}")

@@ -78,7 +78,7 @@ all_frequency = []
 # Frequency sweep loop
 for frequency in frequencies:
     # Solve the ODE for the current frequency
-    solution = solve_ivp(equation_of_motion, t_span, y0, t_eval=t_eval, method='RK45', args=(frequency,))
+    solution = solve_ivp(equation_of_motion, t_span, y0, t_eval=t_eval, method='RK45', args=(frequency,), rtol=1.4e-8, atol=1.4e-8)
     
     # Extract results
     time_values = solution.t

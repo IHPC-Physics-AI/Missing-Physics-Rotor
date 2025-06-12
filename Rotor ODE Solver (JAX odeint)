@@ -1,0 +1,141 @@
+import jax
+import jax.numpy as jnp
+jax.config.update("jax_enable_x64", True)
+from jax.experimental.ode import odeint
+import matplotlib.pyplot as plt
+
+# Constants
+I = 4.667e-10  # Moment of inertia (kg·m²)
+gamma = 0.118  # Friction coefficient (rad/s)
+c = I * gamma  # Damping coefficient (N·m·s)
+epsilon = 8.854e-12  # Permittivity (F/m)
+A = 2e-6  # Effective overlap area (m²)
+V0 = 600  # Peak voltage (V)
+R = 0.005  # Radius of rotor (m)
+d0 = 0.001  # Baseline distance (m)
+
+# Precomputed constants
+R2 = 2 * R
+d0_squared = d0 ** 2
+epsilon_A = epsilon * A
+R_epsilon_A = epsilon_A * R
+
+# Rotor arm and electrode angles
+arm_angles = jnp.array([0, jnp.pi / 2, jnp.pi, (3 * jnp.pi) / 2])
+electrode_angles = jnp.linspace(0, 2 * jnp.pi, 6, endpoint=False)
+
+# Precompute voltage waveforms
+time_grid = jnp.linspace(0, 1, 1000)
+V1_table = V0 * (2 * jnp.abs(2 * (time_grid % 1) - 1) - 1)
+V2_table = jnp.roll(V1_table, int(len(time_grid) / 3))
+V3_table = jnp.roll(V1_table, int(2 * len(time_grid) / 3))
+V_tables = jnp.stack([V1_table, V2_table, V3_table, V1_table, V2_table, V3_table])
+
+@jax.jit
+def electrode_voltages_precomputed(t, f):
+    idx = jnp.mod(f * t, 1.0) * len(time_grid)
+    idx = idx.astype(jnp.int32)
+    return V_tables[:, idx]
+
+@jax.jit
+def compute_torques_scalar(theta, t, f):
+    angle_diff = theta + arm_angles[:, jnp.newaxis] - electrode_angles[jnp.newaxis, :]
+    sin_half_angle_diff = jnp.sin(angle_diff / 2)
+    distances_squared = d0_squared + (R2 * sin_half_angle_diff)**2
+    voltages_squared = electrode_voltages_precomputed(t, f)**2
+    torques = R_epsilon_A * voltages_squared / distances_squared * jnp.sign(jnp.sin(angle_diff))
+    return jnp.sum(torques)
+
+@jax.jit
+def equation_of_motion(y, t, f): # Swap t and y arguments as per odeint signature
+    theta, theta_dot = y
+    total_tau = compute_torques_scalar(theta, t, f)
+    theta_ddot = (total_tau - c * theta_dot) / I
+    return jnp.array([theta_dot, theta_ddot])
+
+# Time and frequency sweep
+t_eval = jnp.linspace(0, 30, 1000)
+frequencies = jnp.arange(0.5, 8.5, 0.5)
+
+# Initial conditions
+theta_0 = 0.1
+theta_dot_0 = 0.1
+y0 = jnp.array([theta_0, theta_dot_0])
+
+# Arrays to store results
+all_theta = []
+all_theta_dot = []
+all_time = []
+all_frequency = []
+
+offset_time = 0.0  # Keep track of cumulative time
+
+# Frequency sweep loop
+for frequency in frequencies:
+    # Pass the current state y0 and the time points t_eval for this frequency segment
+    solution = odeint(equation_of_motion, y0, t_eval, frequency, rtol = 1e-6, atol = 1e-4) #all numerical solvers have tolerance setting.
+
+    # Solution returns the states evaluated at t_eval
+    theta_values = solution[:, 0]
+    theta_dot_values = solution[:, 1]
+
+    # Store results for the current frequency segment
+    all_time.append(t_eval + offset_time)       # Add the offset to make time continuous
+    all_theta.append(theta_values)               # Store theta values
+    all_theta_dot.append(theta_dot_values)       # Store theta_dot values
+    all_frequency.append(jnp.full_like(t_eval, frequency)) # Store frequency for each point
+
+    # Update y0 for the next frequency segment with the last state from the current solution
+    y0 = jnp.array([theta_values[-1], theta_dot_values[-1]])
+
+    # Increment the time offset by the duration of the current segment
+    offset_time += 30
+
+# Concatenate results
+all_theta = jnp.concatenate(all_theta)
+all_theta_dot = jnp.concatenate(all_theta_dot)
+all_time = jnp.concatenate(all_time)
+all_frequency = jnp.concatenate(all_frequency)
+
+# Calculate overall torque similarly
+all_torques = jax.vmap(compute_torques_scalar)(all_theta, all_time, all_frequency)
+
+# Plotting
+fig, axs = plt.subplots(3, 1, figsize=(12, 15), sharex=True) #give 3 rows and 1 column of plots
+
+# Plot Theta with frequency on the secondary y-axis
+ax0 = axs[0] #take first subplot from axs array
+ax1 = axs[0].twinx() #ax1 is second y-axis in same subplot for plotting frequency. Same x-axis.
+ax0.plot(all_time, all_theta, label="Theta (rad)", color='blue')
+ax1.plot(all_time, all_frequency, label="Frequency (Hz)", color='red', linestyle='--')
+ax0.set_ylabel("Theta (rad)", color='blue')
+ax1.set_ylabel("Frequency (Hz)", color='red')
+ax0.set_title("Theta vs Time (Frequency Sweep)")
+ax0.legend(loc="upper left")
+ax1.legend(loc="upper right")
+ax0.grid(True) #provide grid lines
+
+# Plot Angular Velocity with frequency on the secondary y-axis
+ax2 = axs[1]
+ax3 = axs[1].twinx()
+ax2.plot(all_time, all_theta_dot / (2 * jnp.pi), label="Angular Velocity (Hz)", color='orange') #divide by 2pi to convert from rad/s to Hz
+ax3.plot(all_time, all_frequency, label="Frequency (Hz)", color='red', linestyle='--')
+ax2.set_xlabel("Time (s)")
+ax2.set_ylabel("Angular Velocity (Hz)", color='orange')
+ax3.set_ylabel("Frequency (Hz)", color='red')
+ax2.set_title("Angular Velocity vs Time (Frequency Sweep)")
+ax2.legend(loc="upper left")
+ax3.legend(loc="upper right")
+ax2.grid(True)
+
+# Plot Torque
+axs[2].plot(all_time, all_torques, label="Torque (N·m)", color='green')
+axs[2].set_xlabel("Time (s)")
+axs[2].set_ylabel("Torque (N·m)")
+axs[2].set_title("Torque vs Time (Frequency Sweep)")
+axs[2].legend()
+axs[2].grid(True)
+
+# Adjust layout
+plt.tight_layout()
+plt.show()

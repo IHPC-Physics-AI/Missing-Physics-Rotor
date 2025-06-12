@@ -155,8 +155,6 @@ f_test = np.linspace(0.5, 8.5, 100)          # Shape (100,)
 # Compute torque (replace with your actual function)
 torque_true = np.array([compute_torques_scalar(theta, t=20.0, f=f) for theta, f in zip(theta_test.squeeze(), f_test.squeeze())])
 
-print(torque_true)
-
 # Plot
 fig, ax1 = plt.subplots(figsize=(10, 6))
 ax1.plot(theta_test, torque_true, label='Torque vs. Theta', color='blue')

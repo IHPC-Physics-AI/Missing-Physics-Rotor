@@ -200,7 +200,7 @@
         "solver = Dopri5() # A good general-purpose solver, similar to RK45\n",
         "\n",
         "# --- KEY CHANGE: Define a stepsize controller that matches SciPy's defaults ---\n",
-        "step_controller = PIDController(rtol=1e-5, atol=1e-6)"
+        "step_controller = PIDController(rtol=1e-6, atol=1e-6)"
       ],
       "metadata": {
         "id": "oMvddXn37f_h"

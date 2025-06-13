@@ -42,9 +42,9 @@ Accurate prediction achieved.
 
 For fixed t only: 
 Parameters explored...
-- learning rate 1e-3 most ideal
+- learning rate 1e-3 most ideal. Can try learning rate scheduler to adapt learning rate. 
 - different activation functions, including sine and cosine within layers
-- increase training data to 10,000
+- increase training data to 10,000. No need to run training data and epoch to very high levels. Remember to vary frequency for each theta. 
 - increase epoch to 5000
 - min-max scaling for f and theta
 - linear scaling (1e8) for torque

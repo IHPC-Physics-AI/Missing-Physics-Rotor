@@ -1,0 +1,133 @@
+import numpy as np
+from scipy.integrate import solve_ivp
+import matplotlib.pyplot as plt
+
+# Constants
+I = 4.667e-10  # Moment of inertia (kg·m²)
+gamma = 0.118  # Friction coefficient (rad/s)
+c = I * gamma  # Damping coefficient (N·m·s)
+epsilon = 8.854e-12  # Permittivity (F/m)
+A = 2e-6  # Effective overlap area between electrodes and rotor arms (m²)
+V0 = 600  # Peak voltage (V)
+R = 0.005  # Radius of rotor (m)
+d0 = 0.001  # Baseline distance (m)
+mu = 4.76e-4 #/I
+m = 0.0000414 #kg
+Iz = 4.64e-10
+Ix = 2.33e-10
+Iy = Ix
+k = ((2*np.pi*8.83)**2)*m
+
+# Rotor arms and electrode angles
+arm_angles = np.array([0, np.pi / 2, np.pi, (3*np.pi)/2])  # Arm 1 and Arm 2. Creates 1D array.
+electrode_angles = np.linspace(0, 2 * np.pi, 6, endpoint=False) # 6 electrodes
+
+# Precomputed constants
+R2 = 2 * R
+d0_squared = d0**2
+epsilon_A = epsilon * A
+R_epsilon_A = epsilon_A * R
+
+# Define the system of ODEs for theta, theta_dot, theta_ddot, x, x_dot, x_ddot
+theta_dot = 0.1 #keep theta_dot constant 
+def equation_of_motion(t, y):
+    theta, theta_dot, x, x_dot = y
+    total_tau = 0
+    theta_ddot = (total_tau - mu * theta_dot) / I
+    driving_force = 0.1 * x
+    x_ddot = (driving_force - k * x - c * x_dot) / m
+    return [theta_dot, theta_ddot, x_dot, x_ddot]
+
+# Simulation parameters
+t_span = (0, 30)  # Time range (s)
+t_eval = np.linspace(t_span[0], t_span[1], 1000)
+
+# Initial conditions
+theta_0 = 0.1  # Initial angular position (rad)
+theta_dot_0 = theta_dot # Initial angular velocity (rad/s). Keep constant. 
+x_0 = 0.1  # Initial x position (m)
+x_dot_0 = 0.1  # Initial x velocity (m/s)
+y0 = [theta_0, theta_dot_0, x_0, x_dot_0]
+# Arrays to store results
+all_theta = []
+all_theta_dot = []
+all_x = []
+all_x_dot = []
+all_time = []
+
+solution = solve_ivp(equation_of_motion, t_span, y0, t_eval=t_eval, method='RK45')
+
+# Extract results
+time_values = solution.t
+theta_values = solution.y[0]
+theta_dot_values = solution.y[1]
+x_values = solution.y[2]
+x_dot_values = solution.y[3]
+
+# Append results
+all_time.extend(time_values)
+all_theta.extend(theta_values)
+all_theta_dot.extend(theta_dot_values)
+all_x.extend(x_values)
+all_x_dot.extend(x_dot_values)
+
+
+# Convert lists to NumPy arrays for operations
+all_theta = np.array(all_theta)
+all_theta_dot = np.array(all_theta_dot)
+all_x = np.array(all_x)
+all_x_dot = np.array(all_x_dot)
+all_time = np.array(all_time)
+# Calculate overall driving force at each time point
+all_driving_forces = 0.1 * all_x
+
+# Updated plots to include torque
+fig, axs = plt.subplots(5, 1, figsize=(12, 15), sharex=True) #give 5 rows and 1 column of plots
+
+# Plot Theta against Time
+ax0 = axs[0] #take first subplot from axs array
+ax0.plot(all_time, all_theta, label="Theta (rad)", color='blue')
+ax0.set_ylabel("Theta (rad)", color='blue')
+ax0.set_title("Theta vs Time")
+ax0.legend(loc="upper left")
+ax0.grid(True) #provide grid lines
+
+# Plot Angular Velocity against Time
+ax1 = axs[1]
+ax1.plot(all_time, all_theta_dot / (2 * np.pi), label="Angular Velocity (Hz)", color='red') #divide by 2pi to convert from rad/s to Hz
+ax1.set_xlabel("Time (s)")
+ax1.set_ylabel("Angular Velocity (Hz)", color='orange')
+ax1.set_title("Angular Velocity vs Time")
+ax1.legend(loc="upper left")
+ax1.grid(True)
+
+
+# Plot Mode Position against Time
+ax2 = axs[2]
+ax2.plot(all_time, all_x, label="Mode Position", color='yellow')
+ax2.set_xlabel("Time (s)")
+ax2.set_ylabel("Mode Position", color='orange')
+ax2.set_title("Mode Position vs Time")
+ax2.legend(loc="upper left")
+ax2.grid(True)
+
+# Plot Mode Vibration Velocity against Time
+ax3 = axs[3]
+ax3.plot(all_time, all_x_dot, label="Mode Vibration Velocity", color='pink')
+ax3.set_xlabel("Time (s)")
+ax3.set_ylabel("Mode Vibration Velocity", color='orange')
+ax3.set_title("Mode Vibration Velocity vs Time")
+ax3.legend(loc="upper left")
+ax3.grid(True)
+
+# Plot Driving Force
+axs[4].plot(all_time, all_driving_forces, label="Driving Force (N)", color='green')
+axs[4].set_xlabel("Time (s)")
+axs[4].set_ylabel("Driving Force (N)")
+axs[4].set_title("Driving Force vs Time")
+axs[4].legend()
+axs[4].grid(True)
+
+# Adjust layout
+plt.tight_layout()
+plt.show()

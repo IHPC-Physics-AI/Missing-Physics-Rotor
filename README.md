@@ -3,6 +3,7 @@
 This repository is for the development in modelling a spinning rotor system under a scenario where our understanding of the system is incomplete.
 
 #JAX Conversion of ODE solver for old rotor system
+
 Unable to find rtol, atol that perfectly align with numpy solver (applies to all JAX versions). 
 
 # Implementation of Differential Equations in Code (First Try) 

@@ -8,20 +8,20 @@ Unable to find rtol, atol that perfectly align with numpy solver (applies to all
 
 # Implementation of Differential Equations in Code (First Try) 
 
-We no longer have a periodic nature of electrode voltages across time. Therefore, a periodic net torque of the entire rotor system cannot be produced. External driving torque is only induced each instant a rotor arm crosses the laser detector. As a result, net torque can be approximated to 0. (Is the approximation appropriate though?) 
+We no longer have a periodic nature of electrode voltages across time. Therefore, a periodic net torque of the entire rotor system cannot be produced. External driving torque is only induced each instant a rotor arm crosses the laser detector. As a result, net torque can be approximated to 0. (Is the approximation appropriate though?). We are trying to explore deceleration, so no torque. 
 
 I * theta double dot + mu * theta dot = Net torque = 0 (Nm)
-Why do collaborators indicate Ix, Iy, Iz? Isn't rotation only about Iz? Why is I != Iz? 
+Why do collaborators indicate Ix, Iy, Iz? Isn't rotation only about Iz? Why is I != Iz? Only care about I. 
 theta double dot = (0-I*(theta dot))/mu. This line defines equation of motion in code. 
 Why mu and not c? 
 Initial conditions of theta and theta dot are inputs of ODE solver. 0.1 each. 
 
 m * x double dot + c * x dot + k * x = f(t)
-f(t) refers to driving force caused by coupling of modes. It is dependent on rotor frequency and mode vibrations. 
+f(t) refers to driving force caused by coupling of modes. It is dependent on rotor frequency and mode vibrations. Causes system to accelerate in mode, decelerate in rotation. 
 Put x double dot, x dot as subjects in equation of motion in code. 
 Initial conditions of x and x dot are inputs of ODE solver. 0.1 each.
 k = (2pi * fn)^2 * m. How do we know what fn is unless we perform Fourier Decomposition? 
-Are natural fs/Hz considered as fn? 
+Are natural fs/Hz considered as fn? fn can use anything. 
 Consider fn = 8.83Hz first (natural frequency of x mode)? 
 
 First set f = 2 * x 

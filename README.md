@@ -33,6 +33,7 @@ Runtime 22 minutes!
 Result: Rapid fluctuations in x, x dot and driving force across time. Sharp spikes in theta and theta dot then both go to 0. Possibly due to net torque = 0.
 
 3rd set f = 0.1 * x. Set theta dot (frequency of rotor) as constant: 0.1. 
+No difference from 2nd. 
 
 #NN Torque Predictor 
 

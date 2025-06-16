@@ -6,7 +6,7 @@ This repository is for the development in modelling a spinning rotor system unde
 
 Unable to find rtol, atol that perfectly align with numpy solver (applies to all JAX versions). However, exact alignment is not necessary since it is difficult to attain maximal precision. 
 
-# Implementation of Differential 2-Equations in Code (First Try) 
+# Implementation of Differential 2-Equations in Code (First Try) #
 
 We no longer have a periodic nature of electrode voltages across time. Therefore, a periodic net torque of the entire rotor system cannot be produced. External driving torque is only induced each instant a rotor arm crosses the laser detector. As a starting simulation, we explore deceleration of the rotor at various rotational frequencies. Assume no net torque here. 
 
@@ -59,9 +59,8 @@ What other modifications to make? Any better methods of trial and error? Can try
 Tasks in past week: 
 1. Achieve accurate 2D NN torque prediction for old rotor system using simulation variables (theta, f)
 2. Implement 2-Equation ODE Solver for new system (both Numpy and JAX). Explore possible trends for mode vibrations, forms of driving force f(t) (start with single dependence on x position first). 
-3. Brief review of latest rotor experiment paper. 
 
-# Implementation of Differential 2-Equations in Code (2nd Try) 
+### Implementation of Differential 2-Equations in Code (2nd Try) ###
 After appropriate changes made to c, Q and fn. 
 1st set f = 0.1 * x 
 Result: Less rapid fluctuations in x, x_dot and driving force over time with apparent damping. theta and thea_dot still display sharp changes to 0. 
@@ -78,7 +77,7 @@ Result: ERROR. The simulation results contain infinite or NaN values. This indic
 5th set f = 2 * x. Modify code to skip plotting for infinite or NaN values.
 Result: Simulation results contain infinite or NaN values. Skipping plotting.
 
-# 2D NN Torque Predictor
+### 2D NN Torque Predictor ###
 - NN prediction for theta varied from 0 to 2pi for each frequency in range jnp.linspace(0.5, 8.8, 0.5)
 - Only swish activation functions and sinusoidal functions
 - learning rate = 1e-4

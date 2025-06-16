@@ -10,7 +10,7 @@ Unable to find rtol, atol that perfectly align with numpy solver (applies to all
 
 We no longer have a periodic nature of electrode voltages across time. Therefore, a periodic net torque of the entire rotor system cannot be produced. External driving torque is only induced each instant a rotor arm crosses the laser detector. As a starting simulation, we explore deceleration of the rotor at various rotational frequencies. Assume no net torque here. 
 
-I * theta_ddot + mu * theta_dot = tau = 0 (Nm)
+I * theta_ddot + mu * theta_dot = total_tau = 0 (Nm)
 Iz = 4.64e-10
 Ix = 2.33e-10
 Iy = Ix
@@ -18,7 +18,7 @@ I = 4.667e-10
 We only consider I as moment of inertia for rotor rotation here. 
 theta_ddot = (0-I*(theta_dot))/mu. This line defines equation of motion in code. 
 Why mu and not c? Does not matter. Stick with mu as indicated in latest system desciption. 
-Initial conditions of theta and theta dot are inputs of ODE solver. 0.1 each. 
+Initial conditions of theta and theta_dot are inputs of ODE solver. 0.1 each. 
 
 m * x_ddot + c * x_dot + k * x = f(t)
 f(t) refers to driving force caused by coupling of modes. It is dependent on rotor frequency and mode vibrations. Causes system to accelerate in mode, decelerate in rotation (due to energy transfer from rotations to vibrations). 

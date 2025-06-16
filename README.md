@@ -4,25 +4,28 @@ This repository is for the development in modelling a spinning rotor system unde
 
 #JAX Conversion of ODE solver for old rotor system
 
-Unable to find rtol, atol that perfectly align with numpy solver (applies to all JAX versions). 
+Unable to find rtol, atol that perfectly align with numpy solver (applies to all JAX versions). However, exact alignment is not necessary since it is difficult to attain maximal precision. 
 
 # Implementation of Differential Equations in Code (First Try) 
 
-We no longer have a periodic nature of electrode voltages across time. Therefore, a periodic net torque of the entire rotor system cannot be produced. External driving torque is only induced each instant a rotor arm crosses the laser detector. As a result, net torque can be approximated to 0. (Is the approximation appropriate though?). We are trying to explore deceleration, so no torque. 
+We no longer have a periodic nature of electrode voltages across time. Therefore, a periodic net torque of the entire rotor system cannot be produced. External driving torque is only induced each instant a rotor arm crosses the laser detector. As a starting simulation, we explore deceleration of the rotor at various rotational frequencies. Assume no net torque here. 
 
-I * theta double dot + mu * theta dot = Net torque = 0 (Nm)
-Why do collaborators indicate Ix, Iy, Iz? Isn't rotation only about Iz? Why is I != Iz? Only care about I. 
-theta double dot = (0-I*(theta dot))/mu. This line defines equation of motion in code. 
-Why mu and not c? 
+I * theta_ddot + mu * theta_dot = tau = 0 (Nm)
+Iz = 4.64e-10
+Ix = 2.33e-10
+Iy = Ix
+I = 4.667e-10 
+We only consider I as moment of inertia for rotor rotation here. 
+theta_ddot = (0-I*(theta_dot))/mu. This line defines equation of motion in code. 
+Why mu and not c? Does not matter. Stick with mu as indicated in latest system desciption. 
 Initial conditions of theta and theta dot are inputs of ODE solver. 0.1 each. 
 
-m * x double dot + c * x dot + k * x = f(t)
-f(t) refers to driving force caused by coupling of modes. It is dependent on rotor frequency and mode vibrations. Causes system to accelerate in mode, decelerate in rotation. 
-Put x double dot, x dot as subjects in equation of motion in code. 
+m * x_ddot + c * x_dot + k * x = f(t)
+f(t) refers to driving force caused by coupling of modes. It is dependent on rotor frequency and mode vibrations. Causes system to accelerate in mode, decelerate in rotation (due to energy transfer from rotations to vibrations). 
+Put x_ddot, x_dot as subjects in equation of motion in code. 
 Initial conditions of x and x dot are inputs of ODE solver. 0.1 each.
-k = (2pi * fn)^2 * m. How do we know what fn is unless we perform Fourier Decomposition? 
-Are natural fs/Hz considered as fn? fn can use anything. 
-Consider fn = 8.83Hz first (natural frequency of x mode)? 
+k = (2pi * fn)^2 * m. 
+How do we know what fn is unless we perform Fourier Decomposition? For now, we can explore any values for fn. 
 
 First set f = 2 * x 
 Plot theta, theta dot, x, x dot against time. t = 30s 

@@ -69,6 +69,15 @@ Result: Less rapid fluctuations in x, x_dot and driving force over time with app
 2nd set f = 0.01 * x
 Result: More rapid fluctuations of x, x_dot and driving force than 1st. Similar apparent damping over time. theta and theta_dot same trend. Strange observation: theta_0 and theta_dot_0 don't appear to be 0.1 at t = 0s? 
 
+3rd set f = 0.05 * x
+Result: Intermediate rapid fluctuations "..."
+
+4th set f = 0.5 * x
+Result: ERROR. The simulation results contain infinite or NaN values. This indicates that the issue is not with the plotting code itself, but with the simulation producing values that grow too large or become undefined.
+
+5th set f = 2 * x. Modify code to skip plotting for infinite or NaN values.
+Result: Simulation results contain infinite or NaN values. Skipping plotting.
+
 # 2D NN Torque Predictor
 - NN prediction for theta varied from 0 to 2pi for each frequency in range jnp.linspace(0.5, 8.8, 0.5)
 - Only swish activation functions and sinusoidal functions

@@ -24,7 +24,7 @@ m * x_ddot + c * x_dot + k * x = f(t)
 f(t) refers to driving force caused by coupling of modes. It is dependent on rotor frequency and mode vibrations. Causes system to accelerate in mode, decelerate in rotation (due to energy transfer from rotations to vibrations). 
 Put x_ddot, x_dot as subjects in equation of motion in code. 
 Initial conditions of x and x dot are inputs of ODE solver. 0.1 each.
-k = (2pi * fn)^2 * m. 
+k = (2*np.pi*fn)**2) * m. 
 How do we know what fn is unless we perform Fourier Decomposition? For now, we can explore any values for fn. 
 
 First set f = 2 * x 

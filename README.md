@@ -55,7 +55,7 @@ Parameters explored...
 Trials & Errors not so successful.
 What other modifications to make? Any better methods of trial and error? Can try learning rate scheduler to adapt learning rate. 
 
-### UPDATES: 17/6/2025 ###
+# UPDATES: 17/6/2025 #
 Tasks in past week: 
 1. Achieve accurate 2D NN torque prediction for old rotor system using simulation variables (theta, f)
 2. Implement 2-Equation ODE Solver for new system (both Numpy and JAX). Explore possible trends for mode vibrations, forms of driving force f(t) (start with single dependence on x position first). 

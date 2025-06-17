@@ -77,6 +77,8 @@ Result: ERROR. The simulation results contain infinite or NaN values. This indic
 5th set f = 2 * x. Modify code to skip plotting for infinite or NaN values.
 Result: Simulation results contain infinite or NaN values. Skipping plotting.
 
+Next setp -- Directly plot experimental data from collaborators to visualise with different forms of f(t), no need to keep just linear in x. Keep track of scenarios where results explode. Change mu. Experimental values won't explode, but may be very noisy. If results explode, means simulation values are unphysical. 
+
 ### 2D NN Torque Predictor ###
 - NN prediction for theta varied from 0 to 2pi for each frequency in range jnp.linspace(0.5, 8.8, 0.5)
 - Only swish activation functions and sinusoidal functions
@@ -84,3 +86,6 @@ Result: Simulation results contain infinite or NaN values. Skipping plotting.
 - Used meshgrid and jnp.stack to assign uniform frequencies for each set of 1000 theta values in NN training.
 - Plotted multiple pairs of graphs of torque_true and torque_pred for each frequency
 Result: Accurate prediction and same torque_true for all frequencies. Prediction more accurate for manual concatenation of sinusoidal functions compared to including them in hidden layers. 
+
+Convergent history of the training loss. Shows whether training is converging. Check torqure computataion, whether remains the same for all frequencies. Relative error (normalizes scaling, computes error wrt to original magnitude, takes away the original scale of the problem) tells error in %, shows how model compares in different length scales. MSE tells error in the original units. 
+Plot ground truth of all frequencies to compare. 

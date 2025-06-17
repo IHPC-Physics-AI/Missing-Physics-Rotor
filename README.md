@@ -60,7 +60,7 @@ Tasks in past week:
 1. Achieve accurate 2D NN torque prediction for old rotor system using simulation variables (theta, f)
 2. Implement 2-Equation ODE Solver for new system (both Numpy and JAX). Explore possible trends for mode vibrations, forms of driving force f(t) (start with single dependence on x position first). 
 
-### Implementation of Differential 2-Equations in Code (2nd Try) ###
+## Implementation of Differential 2-Equations in Code (2nd Try) ##
 After appropriate changes made to c, Q and fn. 
 1st set f = 0.1 * x 
 Result: Less rapid fluctuations in x, x_dot and driving force over time with apparent damping. theta and thea_dot still display sharp changes to 0. 
@@ -79,7 +79,7 @@ Result: Simulation results contain infinite or NaN values. Skipping plotting.
 
 ## Next step -- Directly plot experimental data from collaborators to visualise with different forms of f(t), no need to keep just linear in x. Keep track of scenarios where results explode. Change mu. Experimental values won't explode, but may be very noisy. If results explode, means simulation values are unphysical. 
 
-### 2D NN Torque Predictor ###
+## 2D NN Torque Predictor ##
 - NN prediction for theta varied from 0 to 2pi for each frequency in range jnp.linspace(0.5, 8.8, 0.5)
 - Only swish activation functions and sinusoidal functions
 - learning rate = 1e-4
@@ -87,5 +87,4 @@ Result: Simulation results contain infinite or NaN values. Skipping plotting.
 - Plotted multiple pairs of graphs of torque_true and torque_pred for each frequency
 Result: Accurate prediction and same torque_true for all frequencies. Prediction more accurate for manual concatenation of sinusoidal functions compared to including them in hidden layers. 
 
-## Next step -- Convergent history of the training loss. Shows whether training is converging. Check torque computataion, whether remains the same for all frequencies. Relative error (normalizes scaling, computes error wrt to original magnitude, takes away the original scale of the problem) tells error in %, shows how model compares in different length scales. MSE tells error in the original units. 
-## Plot ground truth of all frequencies to compare. 
+## Next step -- Convergent history of the training loss. Shows whether training is converging. Check torque computataion, whether remains the same for all frequencies. Relative error (normalizes scaling, computes error wrt to original magnitude, takes away the original scale of the problem) tells error in %, shows how model compares in different length scales. MSE tells error in the original units. Plot ground truth of all frequencies to compare. 

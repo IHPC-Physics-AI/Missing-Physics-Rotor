@@ -88,3 +88,25 @@ Result: Simulation results contain infinite or NaN values. Skipping plotting.
 Result: Accurate prediction and same torque_true for all frequencies. Prediction more accurate for manual concatenation of sinusoidal functions compared to including them in hidden layers. 
 
 ### Next step -- Convergent history of the training loss. Shows whether training is converging. Check torque computataion, whether remains the same for all frequencies. Relative error (normalizes scaling, computes error wrt to original magnitude, takes away the original scale of the problem) tells error in %, shows how model compares in different length scales. MSE tells error in the original units. Plot ground truth of all frequencies to compare. 
+
+# UPDATES 20/6/2025 #
+
+## Implementation of Differential 2-Equations in Code (2nd Try) ##
+Plotted of experimental values (x mode displacement against time). Rapid fluctuations with no decay over time. Mode positions between 1.0 and -1.0. Is the torque being applied caused by periodic laser detections of the arms? 
+
+After appropriate change made to mu (still keep f = 0.01 * x):
+Oscillations become more rapid, but same decay trend for driving force, x and x_dot. theta increases linearly. theta_dot decreases linearly. No more sharp changes since mu now matches precision of the system. 
+
+Exploring different forms of f: 
+1. f = x**2
+   Driving force fluctuates across positive values (as expected). x_dot fluctuates in similar trend as before and decays. x has larger     fluctuations in positive values. theta and theta_dot increase and decrease linearly respectively (same as before).
+2. f = x**3
+   Driving force fluctuations decay rapidly. x and x_dot fluctuations decay more gradually and symmetrical about positive & negative       values. Same linear trends for theta and theta_dot.
+3. f = sin(x)
+   Only positive fluctuation of x. Higher positive fluctuations for x_dot and higher negative fluctuations for driving force.
+   Higher positive fluctutations of driving force. Higher negative fluctuations of x_dot. Only positive fluctuations of x.
+
+Attempt at making total_tau positive to mimick non-decay of experimental x:
+total_tau = 2
+Decay still happens. Why? 
+

@@ -108,5 +108,5 @@ Exploring different forms of f:
 
 Attempt at making total_tau positive to mimick non-decay of experimental x:
 total_tau = 2
-Decay still happens. Why? 
+Decay still happens. This is because tau only affects rotation of system. Here, simulated driving force only dependent on x. Clear evidence that x_dot is dependent on theta_dot in actual experiment. 
 

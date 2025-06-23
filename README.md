@@ -99,9 +99,9 @@ Oscillations become more rapid, but same decay trend for driving force, x and x_
 
 Exploring different forms of f: 
 1. f = 0.12<=const<=0.15 * x
-   Driving, x, x_dot remain constant near 0, then spike at end of 30s. Can't seem to make much sense on the spiking but logical to see     that quantities are near 0 due to small precision of x, as well as relatively high driving force suppressing vibrations. theta and      theta_dot increase and decrease linearly respectively.
+   Driving, x, x_dot remain constant near 0, then spike at end of 30s. Can't seem to make much sense of the spiking but logical to see     that quantities are near 0 due to small precision of x, as well as relatively high driving force suppressing vibrations. theta and      theta_dot increase and decrease linearly respectively.
 2. f = >=0.16 * x
-   Infinite values. 
+   Infinite values. Driving force becomes too high relative to x perhaps? Infinities probably come from x, x_dot and f since f purely    dependent on x. 
 3. f = x**2
    Driving force fluctuates across positive values (as expected). x_dot fluctuates in similar trend as before and decays. x has larger     fluctuations in positive values. theta and theta_dot increase and decrease linearly respectively (same as before).
 4. f = x**3

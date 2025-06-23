@@ -89,7 +89,7 @@ Result: Accurate prediction and same torque_true for all frequencies. Prediction
 
 ### Next step -- Convergent history of the training loss. Shows whether training is converging. Check torque computataion, whether remains the same for all frequencies. Relative error (normalizes scaling, computes error wrt to original magnitude, takes away the original scale of the problem) tells error in %, shows how model compares in different length scales. MSE tells error in the original units. Plot ground truth of all frequencies to compare. 
 
-# UPDATES 20/6/2025 #
+# UPDATES 20/6 - 24/6 25" #
 
 ## Implementation of Differential 2-Equations in Code (2nd Try) ##
 Plotted of experimental values (x mode displacement against time). Rapid fluctuations with no decay over time. Mode positions between 1.0 and -1.0. Is the torque being applied caused by periodic laser detections of the arms? 
@@ -109,4 +109,8 @@ Exploring different forms of f:
 Attempt at making total_tau positive to mimick non-decay of experimental x:
 total_tau = 2
 Decay still happens. This is because tau only affects rotation of system. Here, simulated driving force only dependent on x. Clear evidence that x_dot is dependent on theta_dot in actual experiment. 
+
+## Running Collaborators' Frequency FFT Script on Data ##
+Result: Plot of frequency and vibrational displacement against time is exactly the same for omega-z mode of 12mm rotor. Shows that data provided was for omega-z mode. As time passes, frequency decreases along with vibrational displacement. Damping of both theta_dot and x_dot. But if energy is transferred from rotation of rotor to vibration of arms, shouldn't x_dot (and thus x) be increasing? 
+Question: Existence of other significant curves. Noise? 
 

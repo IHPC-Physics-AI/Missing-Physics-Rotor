@@ -98,11 +98,13 @@ After appropriate change made to mu (still keep f = 0.01 * x):
 Oscillations become more rapid, but same decay trend for driving force, x and x_dot. theta increases linearly. theta_dot decreases linearly. No more sharp changes since mu now matches precision of the system. 
 
 Exploring different forms of f: 
-1. f = x**2
+1. f = >=0.12 * x
+   Driving, x, x_dot remain constant near 0, then spike at end of 30s. Can't seem to make much sense on the spiking but logical to see     that quantities are near 0 due to small precision of x, as well as relatively high driving force suppressing vibrations. theta and    theta_dot increase and decrease linearly respectively
+3. f = x**2
    Driving force fluctuates across positive values (as expected). x_dot fluctuates in similar trend as before and decays. x has larger     fluctuations in positive values. theta and theta_dot increase and decrease linearly respectively (same as before).
-2. f = x**3
+4. f = x**3
    Driving force fluctuations decay rapidly. x and x_dot fluctuations decay more gradually and symmetrical about positive & negative       values. Same linear trends for theta and theta_dot.
-3. f = sin(x)
+5. f = sin(x)
    Only positive fluctuation of x. Higher positive fluctuations for x_dot and higher negative fluctuations for driving force.
    Higher positive fluctutations of driving force. Higher negative fluctuations of x_dot. Only positive fluctuations of x.
 

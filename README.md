@@ -128,3 +128,6 @@ Decay still happens. This is because tau only affects rotation of system. Here, 
 Result: Plot of frequency and vibrational displacement against time is exactly the same for omega-z mode of 12mm rotor. Shows that data provided was for omega-z mode. As time passes, frequency decreases along with vibrational displacement. Damping of both theta_dot and x_dot. But if energy is transferred from rotation of rotor to vibration of arms, shouldn't x_dot (and thus x) be increasing? 
 Question: Existence of other significant curves. Noise? 
 
+## 2D NN (Old System) ##
+- Convergent history shows desirable results: Training loss converges to near 0 across epochs.
+- Ground truth for torque shows that it is indeed the same across all frequencies. 

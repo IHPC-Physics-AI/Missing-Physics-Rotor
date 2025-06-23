@@ -90,6 +90,11 @@ Result: Accurate prediction and same torque_true for all frequencies. Prediction
 ### Next step -- Convergent history of the training loss. Shows whether training is converging. Check torque computataion, whether remains the same for all frequencies. Relative error (normalizes scaling, computes error wrt to original magnitude, takes away the original scale of the problem) tells error in %, shows how model compares in different length scales. MSE tells error in the original units. Plot ground truth of all frequencies to compare. 
 
 # UPDATES 20/6 - 24/6 25" #
+Tasks in Past Week:
+- Visualise experimental data for specific mode vibration (figure out which mode it is)
+- Explore more variety of driving force forms while still keeping sole dependence on mode position. Attempt to match experimental plot.
+- Run collaborators' script to visualise provided experimental data with respect to rotor frequency across time. Compare against results in experiment paper.
+- Final improvements to old 2D NN. 
 
 ## Implementation of Differential 2-Equations in Code (2nd Try) ##
 Plotted of experimental values (x mode displacement against time). Rapid fluctuations with no decay over time. Mode positions between 1.0 and -1.0. Is the torque being applied caused by periodic laser detections of the arms? 
@@ -108,7 +113,12 @@ Exploring different forms of f:
    Driving force fluctuations decay rapidly. x and x_dot fluctuations decay more gradually and symmetrical about positive & negative       values. Same linear trends for theta and theta_dot.
 5. f = sin(x)
    Only positive fluctuation of x. Higher positive fluctuations for x_dot and higher negative fluctuations for driving force.
-   Higher positive fluctutations of driving force. Higher negative fluctuations of x_dot. Only positive fluctuations of x.
+6. f = cos(x)
+   Higher positive fluctuations of driving force. Higher negative fluctuations of x_dot. Only positive fluctuations of x.
+8. f = sin(x) + cos(x)
+   Positive fluctuations of x. Approximately symmetrical fluctuations in x_dot and driving force. 
+10. f = exp(x)
+   Infinite values (as expected) 
 
 Attempt at making total_tau positive to mimick non-decay of experimental x:
 total_tau = 2

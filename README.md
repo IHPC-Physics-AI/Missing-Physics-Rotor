@@ -129,7 +129,7 @@ In experiment, both rotation frequency and vibrational frequency will decay.
 Q factor is degree to which you get amplification of resonant modes. Determines how high the peak goes in real-world. 
 
 ## Running Collaborators' Frequency FFT Script on Data ##
-Result: Plot of frequency and vibrational displacement against time is exactly the same for omega-z mode of 12mm rotor. Shows that data provided was for omega-z mode. As time passes, frequency decreases along with vibrational displacement. Damping of both theta_dot and x_dot. But if energy is transferred from rotation of rotor to vibration of arms, shouldn't x_dot (and thus x) be increasing? 
+Result: Plot of frequency and vibrational displacement against time is exactly the same for omega-z mode of 12mm rotor. Shows that data provided was for omega-z mode. As time passes, frequency decreases along with vibrational displacement. Damping of both theta_dot and x_dot. But if energy is transferred from rotation of rotor to vibration of arms, shouldn't x_dot (and thus x) be increasing? In general, both rotation and vibration will lose energy gradually over time. 
 Question: Existence of other significant curves. Noise? 
 Clarification: How to interpret FFT codes. 
 omega-z mode has jump at 2800s. 

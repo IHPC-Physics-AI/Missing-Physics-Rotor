@@ -98,6 +98,7 @@ Tasks in Past Week:
 
 ## Implementation of Differential 2-Equations in Code (2nd Try) ##
 Plotted of experimental values (x mode displacement against time). Rapid fluctuations with no decay over time. Mode positions between 1.0 and -1.0. Is the torque being applied caused by periodic laser detections of the arms? 
+Visually hard to see damping due to noise of high frequencies. No torque in actual experiment. Laser is only used as detection, no voltage involved. 
 
 After appropriate change made to mu (still keep f = 0.01 * x):
 Oscillations become more rapid, but same decay trend for driving force, x and x_dot. theta increases linearly. theta_dot decreases linearly. No more sharp changes since mu now matches precision of the system. 
@@ -123,12 +124,24 @@ Exploring different forms of f:
 Attempt at making total_tau positive to mimick non-decay of experimental x:
 total_tau = 2
 Decay still happens. This is because tau only affects rotation of system. Here, simulated driving force only dependent on x. Clear evidence that x_dot is dependent on theta_dot in actual experiment. 
+Need driving frequency (from theta coupling) to match resonant frequency of vibration in order for the decay to be more apparent. Then you get enhanced transfer of energy from 1 mode to the other. 
+In experiment, both rotation frequency and vibrational frequency will decay. 
+Q factor is degree to which you get amplification of resonant modes. Determines how high the peak goes in real-world. 
 
 ## Running Collaborators' Frequency FFT Script on Data ##
 Result: Plot of frequency and vibrational displacement against time is exactly the same for omega-z mode of 12mm rotor. Shows that data provided was for omega-z mode. As time passes, frequency decreases along with vibrational displacement. Damping of both theta_dot and x_dot. But if energy is transferred from rotation of rotor to vibration of arms, shouldn't x_dot (and thus x) be increasing? 
 Question: Existence of other significant curves. Noise? 
 Clarification: How to interpret FFT codes. 
+omega-z mode has jump at 2800s. 
+They know that omega-z resonance was not hit. Guessing that energy is transferred from omega to x due to some unknown physical process. 
+FFT graph plots amplitudes for all frequencies at each time point. 
 
 ## 2D NN (Old System) ##
 - Convergent history shows desirable results: Training loss converges to near 0 across epochs.
 - Ground truth for torque shows that it is indeed the same across all frequencies. 
+
+Better to plot training scale to log scale. 
+
+## Next Step ## 
+- Convert FFT code to JAX code. jnp.fft
+- 

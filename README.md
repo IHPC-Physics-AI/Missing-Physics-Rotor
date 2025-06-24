@@ -144,4 +144,4 @@ Better to plot training scale to log scale.
 
 ## Next Step ## 
 - Convert FFT code to JAX code. jnp.fft
-- 
+- Read paper

@@ -91,13 +91,13 @@ Result: Accurate prediction and same torque_true for all frequencies. Prediction
 
 # UPDATES 20/6 - 24/6 25" #
 Tasks in Past Week:
-- Visualise experimental data for specific mode vibration (figure out which mode it is)
+- Visualise experimental data for specific mode vibration (figure out which mode it is). In reality data is supposed to be decomposed into the 3 modes. 
 - Explore more variety of driving force forms while still keeping sole dependence on mode position. Attempt to match experimental plot.
 - Run collaborators' script to visualise provided experimental data with respect to rotor frequency across time. Compare against results in experiment paper.
 - Final improvements to old 2D NN. 
 
 ## Implementation of Differential 2-Equations in Code (2nd Try) ##
-Plotted of experimental values (x mode displacement against time). Rapid fluctuations with no decay over time. Mode positions between 1.0 and -1.0. Is the torque being applied caused by periodic laser detections of the arms? 
+Plot of experimental values (x mode displacement against time). Rapid fluctuations with no decay over time. Mode positions between 1.0 and -1.0. Is the torque being applied caused by periodic laser detections of the arms? 
 Visually hard to see damping due to noise of high frequencies. No torque in actual experiment. Laser is only used as detection, no voltage involved. 
 
 After appropriate change made to mu (still keep f = 0.01 * x):
@@ -130,7 +130,7 @@ Q factor is degree to which you get amplification of resonant modes. Determines 
 
 ## Running Collaborators' Frequency FFT Script on Data ##
 Result: Plot of frequency and vibrational displacement against time is exactly the same for omega-z mode of 12mm rotor. Shows that data provided was for omega-z mode. As time passes, frequency decreases along with vibrational displacement. Damping of both theta_dot and x_dot. But if energy is transferred from rotation of rotor to vibration of arms, shouldn't x_dot (and thus x) be increasing? In general, both rotation and vibration will lose energy gradually over time. 
-Question: Existence of other significant curves. Noise? 
+Question: Existence of other significant curves. Noise? Probably.
 Clarification: How to interpret FFT codes. 
 omega-z mode has jump at 2800s. 
 They know that omega-z resonance was not hit. Guessing that energy is transferred from omega to x due to some unknown physical process. 
@@ -144,4 +144,5 @@ Better to plot training scale to log scale.
 
 ## Next Step ## 
 - Convert FFT code to JAX code. jnp.fft
-- Read paper
+- Read paper to understand physics of experiment. 
+- Produce NN predictor that calls ODE solver

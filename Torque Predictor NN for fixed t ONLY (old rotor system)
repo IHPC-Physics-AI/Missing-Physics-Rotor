@@ -1,13 +1,11 @@
 import jax
 import jax.numpy as jnp
-from jax import jit
 from flax import linen as nn
 from flax.training import train_state
 import optax
 from functools import partial
-from jax import config
-config.update("jax_enable_x64", True) #Critical for tiny values
 import matplotlib.pyplot as plt
+
 # Initialize random key
 rng = jax.random.PRNGKey(42)
 
@@ -22,8 +20,8 @@ R = 0.005  # Radius of rotor (m)
 d0 = 0.001  # Baseline distance (m)
 
 # Rotor arms and electrode angles
-arm_angles = jnp.array([0, jnp.pi / 2, jnp.pi, (3*jnp.pi)/2])  # Arms 1 to 4. Creates 1D array.
-electrode_angles = jnp.linspace(0, 2 * jnp.pi, 6, endpoint=False) # 6 electrodes
+arm_angles = jnp.array([0, jnp.pi / 2, jnp.pi, (3 * jnp.pi) / 2])
+electrode_angles = jnp.linspace(0, 2 * jnp.pi, 6, endpoint=False)
 
 # Precomputed constants
 R2 = 2 * R
@@ -34,191 +32,173 @@ R_epsilon_A = epsilon_A * R
 # Precompute triangular waveforms on a time grid
 time_grid = jnp.linspace(0, 1, 1000)
 V1_table = V0 * (2 * jnp.abs(2 * (time_grid % 1) - 1) - 1)
-V2_table = jnp.roll(V1_table, jnp.floor(len(time_grid) / 3).astype(int)) #JAX has explicit emphasis on data types.
+V2_table = jnp.roll(V1_table, jnp.floor(len(time_grid) / 3).astype(int))
 V3_table = jnp.roll(V1_table, jnp.floor(2 * len(time_grid) / 3).astype(int))
 
-@jit #will be slower on first run, but thereafter runs will be faster.
+@jax.jit
 def electrode_voltages_precomputed(t, f):
-    # Use jnp.floor to calculate the index as a JAX array and convert to int
-    idx = jnp.floor((f * t) % 1 * len(time_grid)).astype(int) #.astype designed for arrays use
+    idx = jnp.floor((f * t) % 1 * len(time_grid)).astype(int)
     v1 = V1_table[idx]
     v2 = V2_table[idx]
     v3 = V3_table[idx]
     return jnp.array([v1, v2, v3, v1, v2, v3])
 
-# Torque computation #Torque is a function of position
+# Torque computation function
 def compute_torques_scalar(theta, t, f):
     angle_diff = theta + arm_angles[:, jnp.newaxis] - electrode_angles[jnp.newaxis, :]
     sin_half_angle_diff = jnp.sin(angle_diff / 2)
     distances_squared = d0_squared + (R2 * sin_half_angle_diff)**2
     voltages_squared = electrode_voltages_precomputed(t, f)**2
-    torques = R_epsilon_A * voltages_squared / distances_squared * jnp.sign(jnp.sin(angle_diff))
+    # Reshape voltages_squared to (1, 6) for broadcasting
+    voltages_squared_reshaped = voltages_squared.reshape(1, 6)
+    torques = (R_epsilon_A * voltages_squared_reshaped / distances_squared) * jnp.sign(jnp.sin(angle_diff))
     return jnp.sum(torques)
 
-# Define a function that takes theta and f and uses the fixed t
-def compute_torques(theta, f):
-    return compute_torques_scalar(theta, t=20.0, f=f)
-# =============================================
-# Enhanced Scaling (Handles Tiny Values)
-# =============================================
+# Scale torque function
 def scale_torque(torque):
-    """Scale torque to [-1, 1] range before normalization"""
-    scale_factor = 1e8  # Adjust based on your torque magnitude
-    scaled = torque * scale_factor
-    return scaled, scale_factor
-    #log_torque = jnp.log10(jnp.abs(torque) + 1e-20)  # Adjust based on your torque magnitude
-    #scaled = log_torque / jnp.max(jnp.abs(jnp.log10(jnp.abs(torque) + 1e-20))) #Normalize to [-1, 1]
-    #return scaled, None
-
-# Generate the training data for theta
-theta_train = jnp.linspace(0, 2 * jnp.pi, 10000)
-
-# Generate the training data for frequency f_train
-f_train = jnp.linspace(0.5, 8.5, 10000)
-
-# Define min-max scaling functions
-def min_max_scale(data, min_val, max_val):
-    return (data - min_val) / (max_val - min_val)
-
-# Scale the training data
-theta_min, theta_max = jnp.min(theta_train), jnp.max(theta_train)
-f_min, f_max = jnp.min(f_train), jnp.max(f_train)
-
-theta_train_scaled = min_max_scale(theta_train, theta_min, theta_max).reshape(-1, 1)
-f_train_scaled = min_max_scale(f_train, f_min, f_max).reshape(-1, 1)
-
-# Use vmap to apply compute_torques over the inputs
-torque_train = jax.vmap(compute_torques, in_axes=(0, 0))(theta_train, f_train)
-
-# Scale torque values
-# torque_train_scaled, torque_scaled = scale_torque(torque_train)
-
-def scale_torque(torque):
+    # Use mean and std for scaling
     mean = jnp.mean(torque)
     std = jnp.std(torque)
     scaled = (torque - mean) / std
     return scaled, (mean, std)
 
+# Unscale torque function
 def unscale_torque(torque_scaled, scale_params):
     mean, std = scale_params
     return torque_scaled * std + mean
 
+# Generate training data for multiple frequencies
+num_theta_points = 1000
+frequencies = jnp.arange(0.5, 8.5, 0.5)  # Frequencies from 0.5 Hz to 8.0 Hz
+
+theta_train_vals = jnp.linspace(0, 2 * jnp.pi, num_theta_points)
+
+# Create meshgrid of theta and frequency
+theta_grid, f_grid = jnp.meshgrid(theta_train_vals, frequencies, indexing='ij')
+
+# Flatten the grids to create training pairs
+theta_train = theta_grid.ravel()
+f_train = f_grid.ravel()
+
+# Compute torque for each (theta, frequency) pair
+torque_train = jax.vmap(compute_torques_scalar, in_axes=(0, None, 0))(theta_train, 20.0, f_train)
+
+# Scale the torque
 torque_train_scaled, scale_params = scale_torque(torque_train)
 
-# Reshape data
-theta_train_scaled = theta_train_scaled.reshape(-1, 1)
-torque_train_scaled = torque_train_scaled.reshape(-1, 1)
-f_train_scaled = f_train_scaled.reshape(-1, 1)  # Reshape f_train
+# Combine theta and frequency into a single input array
+X_train = jnp.stack([theta_train, f_train], axis=-1)
+y_train_scaled = torque_train_scaled.reshape(-1, 1)
+
+
+# Enhanced Model Architecture
 class TorquePredictor(nn.Module):
-    dropout_rate: float = 0.1  # Set dropout rate
-
     @nn.compact
-    def __call__(self, theta, f, deterministic: bool):
-        # Concatenate theta with frequency f
-        x = jnp.concatenate([theta, f], axis=-1)
+    def __call__(self, x):
+        # x should have two features: theta and frequency
+        # Rich periodic encoding with frequency
+        theta, frequency = x[:, 0:1], x[:, 1:2]  # Separate theta and frequency
+        x = jnp.concatenate([
+            theta,
+            frequency,
+            # jnp.sin(theta), jnp.cos(theta),
+            # jnp.sin(2 * theta), jnp.cos(2 * theta),
+            # jnp.sin(3 * theta), jnp.cos(3 * theta),
+            # jnp.sin(4 * theta), jnp.cos(4 * theta)
+        ], axis=-1)
 
-        # Forward pass through layers with improved activation functions
-        x = nn.Dense(512)(x)  # Increased layer size
-        x = jnp.sin(2*jnp.pi*x) + jnp.cos(2*jnp.pi*x) # Try Leaky ReLU. discretised relu can represent curves. relu is powerful but finite networks can be better used with more fitting functions.
-
-        x = nn.Dense(512)(x)
-        x = nn.swish(x)
-
-        # Apply dropout
-        x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=deterministic)
-
-        x = nn.Dense(256)(x)  # Another layer
-        x = nn.leaky_relu(x) #relu is the most generalizable. does a piecewise breakdown of curves. relu cannot get 2nd order derivatives.
-
+        # Larger network with residual connections
         x = nn.Dense(256)(x)
-        x = nn.swish(x) #in general try swish, sine and cosine, tanh. No hard rule. swish is exponential pattern. similar to sigmoid. in theory, infinitely wide network can be represented by sine and cosine.
-
-        # Apply dropout
-        x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=deterministic)
-
-        x = nn.Dense(128)(x)  # And another layer
-        x = nn.relu(x)
-
+        x = jnp.sin(2*jnp.pi*x) # + jnp.cos(2*jnp.pi*x)
+        # x = nn.swish(x)
+        x = nn.Dense(128)(x)
+        x = nn.swish(x)
         x = nn.Dense(64)(x)
-        x = nn.tanh(x)
+        x = nn.swish(x)
         return nn.Dense(1)(x)
+
 # Initialize model
 model = TorquePredictor()
-params = model.init(rng, jnp.ones((1, 1)), jnp.ones((1, 1)), deterministic = True)
+params = model.init(rng, jnp.ones((1, 2)))  # Input size is now (theta, frequency)
 
-# =============================================
 # Robust Training Setup
-# =============================================
-optimizer = optax.chain( #Combines multiple transformations to apply to the optimisation process in order into a single transformation.
-    optax.clip(1.0),  # Gradient clipping to prevent them from exceeding a certain magnitude. Avoid issues of numerical instability caused by exploding gradients.
-    optax.adam(learning_rate=1e-3)
+optimizer = optax.chain(
+    optax.clip(1.0),
+    optax.adam(learning_rate=1e-4)
 )
 state = train_state.TrainState.create(
     apply_fn=model.apply,
     params=params,
     tx=optimizer
 )
-# Training step function
-@jax.jit
-def train_step(state, batch, dropout_rng):
-    theta_batch, torque_batch, f_batch = batch
-    def loss_fn(params):
-        pred = state.apply_fn(params, theta_batch, f_batch, deterministic=False, rngs={'dropout': dropout_rng})
-        return jnp.mean((pred - torque_batch) ** 2)
 
+# Training loop
+loss_history = []  # Initialize loss_history list
+
+@jax.jit
+def train_step(state, batch):
+    X_batch, y_batch_scaled = batch
+    def loss_fn(params):
+        pred_scaled = state.apply_fn(params, X_batch)
+        # add ODE solver for EoM
+        # outcome -> solution of x_pred
+        # compute MSE for x_pred vs. x_truth
+        return jnp.mean((pred_scaled - y_batch_scaled) ** 2)
     loss, grads = jax.value_and_grad(loss_fn)(state.params)
     return state.apply_gradients(grads=grads), loss
 
-# Training loop
-for epoch in range(5000):
-    rng, dropout_rng, next_rng = jax.random.split(rng, 3)
-    state, loss = train_step(state, (theta_train_scaled, torque_train_scaled, f_train_scaled), dropout_rng)
-    rng = next_rng
+for epoch in range(3000):
+    state, loss = train_step(state, (X_train, y_train_scaled))
+    loss_history.append(loss.item()) # Append loss to the list
     if epoch % 100 == 0:
         print(f"Epoch {epoch}, Loss: {loss:.4f}")
-# =============================================
-# Evaluation
-# =============================================
 
-# Generate theta_test values
-theta_test = jnp.linspace(0, 2 * jnp.pi, 100).reshape(-1, 1)
-f_test = jnp.linspace(0.5, 8.5, 100).reshape(-1, 1)
-theta_test_scaled = min_max_scale(theta_test, theta_min, theta_max).reshape(-1, 1)
-f_test_scaled = min_max_scale(f_test, f_min, f_max).reshape(-1, 1)
-
-# Compute true torque with a specific frequency for comparison
-torque_true = jax.vmap((compute_torques))(theta_test.squeeze(), f_test.squeeze())
-#torque_true = jnp.array([compute_torques_scalar(theta, t=20.0, f=f) for theta, f in zip(theta_test.squeeze(), f_test.squeeze())])
-
-# Predict and rescale
-torque_pred_scaled = model.apply(state.params, theta_test_scaled, f_test_scaled, deterministic = True)
-torque_pred = unscale_torque(torque_pred_scaled)  # Reverse scaling
-# Create the plot
-fig, ax1 = plt.subplots(figsize=(12, 6))
-
-# Plot true torque and predicted torque on the primary y-axis
-ax1.plot(theta_test, torque_true, label='True Torque', linewidth=2, color='blue')
-ax1.plot(theta_test, torque_pred, '--', label='NN Prediction', linewidth=2, color='orange')
-ax1.set_xlabel('Theta (radians)')
-ax1.set_ylabel('Torque (Original Scale)', color='black')
-ax1.tick_params(axis='y', labelcolor='black')
-ax1.legend(loc='upper left')
-ax1.grid(True)
-
-# Create a secondary x-axis for frequency
-ax2 = ax1.twiny()  # Instantiate a second axes that shares the same y-axis
-
-# Optional: Set limits for clarity if needed
-# ax2.set_xlim(0.5, 8.5)  # Adjust x-limits for frequency if needed
-# Add legend for frequency
-ax2.legend(loc='upper right')
-
-# Show the title and the plot
-plt.title('Improved Torque Prediction with Frequency')
-plt.tight_layout()  # Adjust layout to prevent overlap
+# Plotting the training loss history
+plt.figure(figsize=(10, 5))
+plt.plot(loss_history, label='Training Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.title('Training Loss History')
+plt.legend()
+plt.grid(True)
 plt.show()
 
-# Metrics
-mse = jnp.mean((torque_true - torque_pred)**2)
-print(f"Test MSE: {mse:.3e}")
-print(f"Max Error: {jnp.max(jnp.abs(torque_true - torque_pred)):.3e}")
+# Evaluation
+theta_test_vals = jnp.linspace(0, 2 * jnp.pi, 100)
+frequencies_test = jnp.arange(0.5, 8.5, 0.5)
+
+plt.figure(figsize=(12, 6))
+
+for f in frequencies_test:
+    # Create test data for the current frequency
+    theta_test = theta_test_vals.reshape(-1, 1)
+    frequency_test = jnp.full_like(theta_test, f)
+    X_test = jnp.concatenate([theta_test, frequency_test], axis=-1)
+
+
+    # Compute true torque for the current frequency
+    torque_true = jax.vmap(compute_torques_scalar, in_axes=(0, None, None))(theta_test.squeeze(), 20.0, f)
+
+    # Predict and unscale
+    torque_pred_scaled = model.apply(state.params, X_test)
+    torque_pred = unscale_torque(torque_pred_scaled, scale_params)
+
+    # Plotting true vs predicted
+    plt.plot(theta_test, torque_true, label=f'True Torque (f={f}Hz)', linewidth=2)
+    plt.plot(theta_test, torque_pred.squeeze(), '--', label=f'Predicted Torque (f={f}Hz)', linewidth=2)
+
+
+plt.xlabel('Theta (radians)')
+plt.ylabel('Torque (Original Scale)')
+plt.title('True Torque')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Metrics - Note: Calculating a single MSE and Max Error across all frequencies might not be representative.
+# Consider calculating metrics per frequency or a weighted average if needed.
+# For simplicity, we'll calculate across all points plotted.
+# Flatten true and predicted torques from the last plotted frequency for metric calculation
+mse = jnp.mean((torque_true - torque_pred.squeeze())**2)
+print(f"Test MSE (last frequency plotted): {mse:.3e}")
+print(f"Max Error (last frequency plotted): {jnp.max(jnp.abs(torque_true - torque_pred.squeeze())):.3e}")

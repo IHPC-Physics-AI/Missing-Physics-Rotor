@@ -154,7 +154,7 @@ Better to plot training scale to log scale.
 ## ODE NN Predictor ##
 Key Features modified: 
 - Training data are now random values of initial conditions
-- Instead of NN predicting a torque function, now it predicts equation of motions in ODE solver. But am I supposed to predict f(x) directly?
+- Instead of NN predicting a torque function, now it predicts equation of motion in ODE solver. But am I supposed to predict f(x) directly?
 
 Current Stage:
 - Prediction is terrible

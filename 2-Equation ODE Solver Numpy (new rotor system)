@@ -1,22 +1,31 @@
+###ON NUMPY###
+
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
 # Constants
 I = 4.667e-10  # Moment of inertia (kg·m²)
-gamma = 0.118  # Friction coefficient (rad/s)
-c = I * gamma  # Damping coefficient (N·m·s)
 epsilon = 8.854e-12  # Permittivity (F/m)
 A = 2e-6  # Effective overlap area between electrodes and rotor arms (m²)
 V0 = 600  # Peak voltage (V)
 R = 0.005  # Radius of rotor (m)
 d0 = 0.001  # Baseline distance (m)
-mu = 4.76e-4 #/I
+mu = 4.76e-4 * I
 m = 0.0000414 #kg
 Iz = 4.64e-10
 Ix = 2.33e-10
 Iy = Ix
-k = ((2*np.pi*8.83)**2)*m
+fnx = 8.83
+fny = 17.89
+fnz = 22.31
+Qx = 22
+Qy = 19
+Qz = 13
+gamma = 0.118  # Friction coefficient (rad/s)
+c = (m*2*np.pi*fnx)/Qx  # Damping coefficient (N·m·s)
+k = ((2*np.pi*fnx)**2)*m
+
 
 # Rotor arms and electrode angles
 arm_angles = np.array([0, np.pi / 2, np.pi, (3*np.pi)/2])  # Arm 1 and Arm 2. Creates 1D array.
@@ -29,12 +38,11 @@ epsilon_A = epsilon * A
 R_epsilon_A = epsilon_A * R
 
 # Define the system of ODEs for theta, theta_dot, theta_ddot, x, x_dot, x_ddot
-theta_dot = 0.1 #keep theta_dot constant 
-def equation_of_motion(t, y):
+def equation_of_motion(t,y):
     theta, theta_dot, x, x_dot = y
     total_tau = 0
     theta_ddot = (total_tau - mu * theta_dot) / I
-    driving_force = 0.1 * x
+    driving_force = 0.01 * x # sin(x)
     x_ddot = (driving_force - k * x - c * x_dot) / m
     return [theta_dot, theta_ddot, x_dot, x_ddot]
 
@@ -44,7 +52,7 @@ t_eval = np.linspace(t_span[0], t_span[1], 1000)
 
 # Initial conditions
 theta_0 = 0.1  # Initial angular position (rad)
-theta_dot_0 = theta_dot # Initial angular velocity (rad/s). Keep constant. 
+theta_dot_0 = 0.1 # Initial angular velocity (rad/s). Keep constant.
 x_0 = 0.1  # Initial x position (m)
 x_dot_0 = 0.1  # Initial x velocity (m/s)
 y0 = [theta_0, theta_dot_0, x_0, x_dot_0]
@@ -55,7 +63,7 @@ all_x = []
 all_x_dot = []
 all_time = []
 
-solution = solve_ivp(equation_of_motion, t_span, y0, t_eval=t_eval, method='RK45')
+solution = solve_ivp(equation_of_motion, t_span, y0, t_eval=t_eval, method='RK45', rtol=1.4e-8, atol=1.4e-8)
 
 # Extract results
 time_values = solution.t
@@ -79,7 +87,7 @@ all_x = np.array(all_x)
 all_x_dot = np.array(all_x_dot)
 all_time = np.array(all_time)
 # Calculate overall driving force at each time point
-all_driving_forces = 0.1 * all_x
+all_driving_forces = 0.01 * all_x
 
 # Updated plots to include torque
 fig, axs = plt.subplots(5, 1, figsize=(12, 15), sharex=True) #give 5 rows and 1 column of plots

@@ -146,3 +146,17 @@ Better to plot training scale to log scale.
 - Convert FFT code to JAX code. jnp.fft
 - Read paper to understand physics of experiment. 
 - Produce NN predictor that calls ODE solver
+
+# UPDATES: 27/6/2025 #
+- Successful conversion of FFT script into JAX
+- Rough outline of ODE NN Predictor obtained. Still needs more analysis and fixing.
+
+## ODE NN Predictor ##
+Key Features modified: 
+- Training data are now random values of initial conditions
+- Instead of NN predicting a torque function, now it predicts equation of motions in ODE solver. But am I supposed to predict f(x) directly?
+
+Current Stage:
+- Prediction is terrible
+- Use of sinusoidal activation functions does not help
+- Will attempt to scale initial conditions and output variables: theta, theta_dot, x, x_dot. 

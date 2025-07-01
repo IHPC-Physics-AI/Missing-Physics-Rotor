@@ -175,6 +175,8 @@ Tasks in past week:
 - Some issues with shapes
 - Result: High numerical instability. Losses are too huge to produce plots.
 
+Try remove x_ddot first. 
+In theory, x should not be varying over a large set of values. 
 ## Insights from Experiment Paper ##
 - The electrostatic force arises from capacitive interac- tions between the rotor’s arms and the underlying elec- trodes. As this force is always attractive, a torque is gen- erated when there is asymmetry in the overlapping area. In our levitation setup, high voltage signals ( typically above 100V) are applied to the electrodes (see Fig. 1), creating a spatially varying electric field that induces a redistribution of charges on the conducting rotor.
 - We find that when the rotor approaches 500RPM, the rotor starts to wobble dramatically and ultimately stops upon contacting the magnets. This critical speed 500RPM corresponds to a rotational frequency of 8.33Hz, suggesting a possible resonance with one of the rotor’s rigid body modes. So when rotational frequency (aka driving frequency matches natural frequency of mode, resonance occurs. 

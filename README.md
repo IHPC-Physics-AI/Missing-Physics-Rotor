@@ -159,4 +159,20 @@ Key Features modified:
 Current Stage:
 - Prediction is terrible
 - Use of sinusoidal activation functions does not help
-- Will attempt to scale initial conditions and output variables: theta, theta_dot, x, x_dot. 
+- Will attempt to scale initial conditions and output variables: theta, theta_dot, x, x_dot.
+
+# UPDATES: 1/7/2025 #
+Tasks in past week: 
+1. Restructure Neural Network to properly set up training loop for predicting driving_force. Run a few tests to ensure propor structure is achieved before actively improving the NN.
+2. Read experimental paper and summarize insights
+
+
+## Restructured NN training based on feedback from previous meeting: ##
+- Simplified to using only 1 equation first (for x only) 
+- Generated training data for x, x_dot, x_ddot and driving_force by using a single set of fixed initial conditions. Training data obtained from solutions of ODE.
+- Inputs to NN are x, x_dot, x_ddot. 
+- Inserted ODE solver for predicted driving force into training loop. Found losses for ODE solution.
+- Some issues with shapes
+- Result: High numerical instability. Losses are too huge to produce plots.
+
+## Insights from Experiment Paper ##

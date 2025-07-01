@@ -176,3 +176,8 @@ Tasks in past week:
 - Result: High numerical instability. Losses are too huge to produce plots.
 
 ## Insights from Experiment Paper ##
+- The electrostatic force arises from capacitive interac- tions between the rotor’s arms and the underlying elec- trodes. As this force is always attractive, a torque is gen- erated when there is asymmetry in the overlapping area. In our levitation setup, high voltage signals ( typically above 100V) are applied to the electrodes (see Fig. 1), creating a spatially varying electric field that induces a redistribution of charges on the conducting rotor.
+- We find that when the rotor approaches 500RPM, the rotor starts to wobble dramatically and ultimately stops upon contacting the magnets. This critical speed 500RPM corresponds to a rotational frequency of 8.33Hz, suggesting a possible resonance with one of the rotor’s rigid body modes. So when rotational frequency (aka driving frequency matches natural frequency of mode, resonance occurs. 
+- Beating frequency traces 2Ωz −fX (starting from 7.87 Hz) and fX − Ωz (starting from 0.73 Hz) can also be spotted. What are these? 
+- From FFT plot of 12mm rotor: At 2800s, a sharp drop in spin frequency is observed, coinciding with the spin frequency approaching approxi- mately one-third of the θ mode frequency and one-fourth of the Z mode frequency (see also Fig. 3a). This suggests a mode coupling and significant energy transfer to other modes.
+- In contrast, the smaller rotor exhibits a much cleaner spectrum (Fig. 5e), with the dominant frequency com- ponent closely tracking its rotational speed. The higher baseline RPM (> 14Hz) throughout the decay process keeps it away from low-frequency noise and modal cou- pling.

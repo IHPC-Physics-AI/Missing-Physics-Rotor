@@ -188,4 +188,9 @@ In theory, x should not be varying over a large set of values.
 ## f(x) NN Predictor Progress #
 - Successfully made corrections to 3rd cell in Colab to resolve shaping errors (using both x and x_dot as inputs). Now able to output comparisons between predictions of driving_force.
 - Dr Ooi's new code's predictions are much less accurate than my modified version.
-- Questions to ask on both versions (commented in script). 
+- Questions to ask on both versions (commented in script).
+
+Next step: 
+- Tuning of NN
+- Try smaller time interval of 5s
+- Can try to chunk if possible. 

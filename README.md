@@ -182,4 +182,10 @@ In theory, x should not be varying over a large set of values.
 - We find that when the rotor approaches 500RPM, the rotor starts to wobble dramatically and ultimately stops upon contacting the magnets. This critical speed 500RPM corresponds to a rotational frequency of 8.33Hz, suggesting a possible resonance with one of the rotor’s rigid body modes. So when rotational frequency (aka driving frequency matches natural frequency of mode, resonance occurs. 
 - Beating frequency traces 2Ωz −fX (starting from 7.87 Hz) and fX − Ωz (starting from 0.73 Hz) can also be spotted. What are these? For now no need to worry about this. 
 - From FFT plot of 12mm rotor: At 2800s, a sharp drop in spin frequency is observed, coinciding with the spin frequency approaching approxi- mately one-third of the θ mode frequency and one-fourth of the Z mode frequency (see also Fig. 3a). This suggests a mode coupling and significant energy transfer to other modes.
-- In contrast, the smaller rotor exhibits a much cleaner spectrum (Fig. 5e), with the dominant frequency com- ponent closely tracking its rotational speed. The higher baseline RPM (> 14Hz) throughout the decay process keeps it away from low-frequency noise and modal cou- pling. Our NN is not dealing with low_frequency noise. 
+- In contrast, the smaller rotor exhibits a much cleaner spectrum (Fig. 5e), with the dominant frequency com- ponent closely tracking its rotational speed. The higher baseline RPM (> 14Hz) throughout the decay process keeps it away from low-frequency noise and modal cou- pling. Our NN is not dealing with low_frequency noise.
+
+# Updates 4/7/2025 #
+## f(x) NN Predictor Progress #
+- Successfully made corrections to 3rd cell in Colab to resolve shaping errors (using both x and x_dot as inputs). Now able to output comparisons between predictions of driving_force.
+- Dr Ooi's new code's predictions are much less accurate than my modified version.
+- Questions to ask on both versions (commented in script). 

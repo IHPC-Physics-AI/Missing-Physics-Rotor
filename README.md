@@ -211,4 +211,8 @@ Mini-Batching
 Modifying Hidden Layers
 Tuning learning rate
 
-Result: EXTREMELY LONG RUNTIME (ESP AFTER NORMALIZATION & STANDARDIZATION)
+Result: EXTREMELY LONG RUNTIME (ESP AFTER NORMALIZATION & STANDARDIZATION: 40 mins still no output). 
+
+Attempt at reducing runtime:
+t_eval reduce 5s to 1s
+Introduce float32 to improve JAX speed on most GPUs/TPUs

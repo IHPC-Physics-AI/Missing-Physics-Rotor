@@ -195,7 +195,7 @@ Next step:
 - Try smaller time interval of 5s
 - Can try to chunk if possible.
 
-# Updates 4/8/2025 # 
+# Updates 8/7/2025 # 
 Tasks for the past week: 
 - Tune properly structured NN to attain best prediction for driving_force
 - Attempt training and testing with smaller time interval of 5s.

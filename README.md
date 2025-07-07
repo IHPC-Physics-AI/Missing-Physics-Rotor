@@ -185,7 +185,7 @@ In theory, x should not be varying over a large set of values.
 - In contrast, the smaller rotor exhibits a much cleaner spectrum (Fig. 5e), with the dominant frequency com- ponent closely tracking its rotational speed. The higher baseline RPM (> 14Hz) throughout the decay process keeps it away from low-frequency noise and modal cou- pling. Our NN is not dealing with low_frequency noise.
 
 # Updates 4/7/2025 #
-## f(x) NN Predictor Progress #
+## f(x) NN Predictor Progress ##
 - Successfully made corrections to 3rd cell in Colab to resolve shaping errors (using both x and x_dot as inputs). Now able to output comparisons between predictions of driving_force.
 - Dr Ooi's new code's predictions are much less accurate than my modified version.
 - Questions to ask on both versions (commented in script).
@@ -193,4 +193,15 @@ In theory, x should not be varying over a large set of values.
 Next step: 
 - Tuning of NN
 - Try smaller time interval of 5s
-- Can try to chunk if possible. 
+- Can try to chunk if possible.
+
+# Updates 4/8/2025 # 
+Tasks for the past week: 
+- Tune properly structured NN to attain best prediction for driving_force
+- Attempt training and testing with smaller time interval of 5s.
+
+## f(x) NN Predictor Progress ##
+- Found an issue with my version of the NN. The reason why it has 2 driving forces (1 in pred_equation_of_motion and 1 outside) shows that losses calculated have nothing to do with calling the ODE solver. It directly calculates loss of pred_driving_force.
+- Made changes to calculate loss due to x and x_dot. In state.apply_fn(), used batch[0, :2], aka initial conditions of x and x_dot as starting point of training driving_force.
+- Result: Losses were very extreme: -1000+. Very long runtime despite reducing t_eval to 5s. 
+- 

@@ -216,4 +216,4 @@ Result: EXTREMELY LONG RUNTIME (ESP AFTER NORMALIZATION & STANDARDIZATION: 40 mi
 Attempt at reducing runtime:
 - t_eval reduce 5s to 1s
 - Introduce float32 to improve JAX speed on most GPUs/TPUs
-, Result: Loss -- 80000+
+Result: Loss -- 80000+

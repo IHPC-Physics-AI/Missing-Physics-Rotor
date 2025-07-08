@@ -205,11 +205,11 @@ Tasks for the past week:
 - Made changes to calculate loss due to x and x_dot. In state.apply_fn(), used batch[0, :2], aka initial conditions of x and x_dot as starting point of training driving_force.
 - Result: Losses were very extreme: 1000+. Very long runtime despite reducing t_eval to 5s. 
 Tuning Actions:
-Input Normalization
-Output Standardization 
-Mini-Batching
-Modifying Hidden Layers
-Tuning learning rate
+- Input Normalization
+- Output Standardization 
+- Mini-Batching
+- Modifying Hidden Layers
+- Tuning learning rate
 
 Result: EXTREMELY LONG RUNTIME (ESP AFTER NORMALIZATION & STANDARDIZATION: 40 mins still no output). 
 

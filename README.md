@@ -203,7 +203,9 @@ Tasks for the past week:
 ## f(x) NN Predictor Progress ##
 - Found an issue with my version of the NN. The reason why it has 2 driving forces (1 in pred_equation_of_motion and 1 outside) shows that losses calculated have nothing to do with calling the ODE solver. It directly calculates loss of pred_driving_force.
 - Made changes to calculate loss due to x and x_dot. In state.apply_fn(), used batch[0, :2], aka initial conditions of x and x_dot as starting point of training driving_force.
-- Result: Losses were very extreme: 1000+. Very long runtime despite reducing t_eval to 5s. 
+
+Result: Losses were very extreme: 1000+. Very long runtime despite reducing t_eval to 5s. 
+
 ### Tuning Actions: ###
 - Input Normalization
 - Output Standardization 
@@ -213,7 +215,8 @@ Tasks for the past week:
 
 Result: EXTREMELY LONG RUNTIME (ESP AFTER NORMALIZATION & STANDARDIZATION: 40 mins still no output). 
 
-Attempt at reducing runtime:
+### Attempt at reducing runtime:
 - t_eval reduce 5s to 1s
 - Introduce float32 to improve JAX speed on most GPUs/TPUs
+
 Result: Loss -- 80000+

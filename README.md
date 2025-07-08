@@ -214,6 +214,7 @@ Result: Losses were very extreme: 1000+. Very long runtime despite reducing t_ev
 - Tuning learning rate
 
 Result: EXTREMELY LONG RUNTIME (ESP AFTER NORMALIZATION & STANDARDIZATION: 40 mins still no output). 
+
 After another attempt at normalization (between 0 and 1): Losses around 0.3+ 
 
 ### Attempt at reducing runtime:

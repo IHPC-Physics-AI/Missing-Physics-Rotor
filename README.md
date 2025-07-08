@@ -217,6 +217,8 @@ Result: EXTREMELY LONG RUNTIME (ESP AFTER NORMALIZATION & STANDARDIZATION: 40 mi
 
 After another attempt at normalization (between 0 and 1): Losses around 0.3+ 
 
+Observation -- Swish activation leads to losses of 1000+
+
 ### Attempt at reducing runtime:
 - t_eval reduce 5s to 1s
 - Introduce float32 to improve JAX speed on most GPUs/TPUs

@@ -225,4 +225,8 @@ Observation -- Swish activation leads to losses of 1000+
 
 Result: Loss -- 80000+
 
-
+## Next Steps ##
+- Do normalization inside hidden layers
+- Do mini-batching properly: Choose 1 random trajectory first between 0 to 1s. Ensure code accounts for this random initial condition and recognises it accurately. Play around for number of points for NN to predict within that small time interval.
+- Then once settled, introduce more random mini trajectories for NN to use.
+- Mini-batching is more efficient since it doesn't force NN to predict all time points across the whole major time trajectory. 

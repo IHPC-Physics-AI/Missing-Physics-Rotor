@@ -232,6 +232,7 @@ Result: Loss -- 80000+
 - Mini-batching is more efficient since it doesn't force NN to predict all time points across the whole major time trajectory.
 
 ## Updates 11/7/2025 ##
+- Normalization implemented within hidden layers.
 - Managed to implement mini batching for single randomly chosen trajectory per batch within 0 to 5s.
 - Epochs updates every one time, shows gradual decreasing losses.
 - Prediction of driving_force not very accurate, but shape matches the original.

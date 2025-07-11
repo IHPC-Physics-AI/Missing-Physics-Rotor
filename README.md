@@ -229,4 +229,10 @@ Result: Loss -- 80000+
 - Do normalization inside hidden layers
 - Do mini-batching properly: Choose 1 random trajectory first between 0 to 1s. Ensure code accounts for this random initial condition and recognises it accurately. Play around for number of points for NN to predict within that small time interval.
 - Then once settled, introduce more random mini trajectories for NN to use.
-- Mini-batching is more efficient since it doesn't force NN to predict all time points across the whole major time trajectory. 
+- Mini-batching is more efficient since it doesn't force NN to predict all time points across the whole major time trajectory.
+
+## Updates 11/7/2025 ##
+- Managed to implement mini batching for single randomly chosen trajectory per batch within 0 to 5s.
+- Epochs updates every one time, shows gradual decreasing losses.
+- Prediction of driving_force not very accurate, but shape matches the original.
+- Attempt at increasing lengths of single trajectory per epoch. Runtime is slow.  

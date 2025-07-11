@@ -244,5 +244,5 @@ Result: Loss -- 80000+
 - Try adding sinusoidal activation functions
 - Can try reducing size of network too. Maybe 1 - 2 layers. Decrease number of nodes.
 - Set x from -2pi to 2pi. Plot predicted driving_force against x.
-- Scaling only ends at NN level. In rest of ODE no scaling occurs. So attempt to implement scaling for x_dot in MSE. To do this must seperate x and x_dot in MSE calculation. 
+- Scaling only ends at NN level. For the sake of better performance in updating weights. But does not affect ACTUAL prediction of x and x_dot. In rest of ODE no scaling occurs. So attempt to implement scaling for x_dot in MSE. To do this must seperate x and x_dot in MSE calculation. 
 - After predicted accurately, implement second equation in theta. driving_force now depends on both theta and x. 

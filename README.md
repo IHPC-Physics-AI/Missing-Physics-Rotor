@@ -236,4 +236,13 @@ Result: Loss -- 80000+
 - Managed to implement mini batching for single randomly chosen trajectory per batch within 0 to 5s.
 - Epochs updates every one time, shows gradual decreasing losses.
 - Prediction of driving_force not very accurate, but shape matches the original.
-- Attempt at increasing lengths of single trajectory per epoch. Runtime is slow.  
+- Attempt at increasing lengths of single trajectory per epoch. Runtime is slow.
+
+## Next Steps ##
+- Reduce t_eval to 0 to 1s
+- Do 2 to 4 steps for random fixed time interval. Not very generalizable. See whether network can memorise. But easier to see how to improve network. After tuning can start increasing t_eval slightly. 
+- Try adding sinusoidal activation functions
+- Can try reducing size of network too. Maybe 1 - 2 layers. Decrease number of nodes.
+- Set x from -2pi to 2pi. Plot predicted driving_force against x.
+- Scaling only ends at NN level. In rest of ODE no scaling occurs. So attempt to implement scaling for x_dot in MSE. To do this must seperate x and x_dot in MSE calculation. 
+- After predicted accurately, implement second equation in theta. driving_force now depends on both theta and x. 

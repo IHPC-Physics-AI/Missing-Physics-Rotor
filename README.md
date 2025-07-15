@@ -264,3 +264,4 @@ Attempts at tuning NN:
 - Reduce NN, number of neurons. Structure currently too big.
 - Plot convergence
 - Plot loss on log scale against time
+- Implement 2nd equation and set driving_force as sin(x)sin(theta).

@@ -256,4 +256,11 @@ Attempts at tuning NN:
 - Reduced learning rate: Slightly better prediction but only reduce up to 1e-5 since 1e-3 and 1e-4 give nans.
 - Explored different number of hidden layers. Result: Not useful
 - Applied scaling 1/100 to x_dot in loss calculation. Result: Significantly smaller losses (0.1 to 20+) but not much difference in prediction 
-- 
+
+## Next Steps ##
+- Do muliple trajectories
+- Apply learning rate scheduler
+- Reduce tolerance to check if losses are calculating correctly. Change output layer to jnp.sin for checking
+- Reduce NN, number of neurons. Structure currently too big.
+- Plot convergence
+- Plot loss on log scale against time

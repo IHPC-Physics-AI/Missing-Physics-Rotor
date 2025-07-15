@@ -246,3 +246,14 @@ Result: Loss -- 80000+
 - Set x from -2pi to 2pi. Plot predicted driving_force against x.
 - Scaling only ends at NN level. For the sake of better performance in updating weights. But does not affect ACTUAL prediction of x and x_dot. In rest of ODE no scaling occurs. So attempt to implement scaling for x_dot in MSE. To do this must seperate x and x_dot in MSE calculation. 
 - After predicted accurately, implement second equation in theta. driving_force now depends on both theta and x. 
+
+## Updates 15/7/2025 ##
+Attempts at tuning NN: 
+- Reduced t_eval to 0 to 1s for training
+- Plotted driving force against x
+- Added sinusoidal activation functons. Result: Slightly better prediction but still not accurate
+- Use of swish. Result: Not much better in predictions
+- Reduced learning rate: Slightly better prediction but only reduce up to 1e-5 since 1e-3 and 1e-4 give nans.
+- Explored different number of hidden layers. Result: Not useful
+- Applied scaling 1/100 to x_dot in loss calculation. Result: Significantly smaller losses (0.1 to 20+) but not much difference in prediction 
+- 

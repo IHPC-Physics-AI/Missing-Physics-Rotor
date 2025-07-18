@@ -275,4 +275,14 @@ Attempts at tuning NN:
 - No. of trajectories = 17, learning rate = 1e-4, time interval = 5 to 8 time steps: moderately accurate.
 
 ## Next Steps ##
-- Plot "3d" plot. X take min to max. Theta is -pi to pi. 
+- Plot "3d" plot. X take min to max. Theta is -pi to pi. Contour plot. 
+- Think of another function to try too. See how well trajectory can match. To ensure don't have strange bugs. Try x dot theta.
+- voltage is some output. Measures magnitude of velocity of vibration for specific frequency. V is a function of x_dot. One value in csv only accounts for x mode.
+- FFT takes a time window to compute fourier transform. Use same time interval of simulation data. Use same number of sampling points per time window as inside the script they. Generate FFT graph from my simulated data.
+- FFT will give set of values at different fs per time point.
+- For each time you get 1 set of graphs of voltage against frequencies for expt and simulation.
+- Choose 1 time point for 1 trajectory for training.
+- def FFT part as a function, then call it in training loop. Error needs to be done on FFT output.
+- Magnitude of frequency is just some paramter. Take predicted output of FFT and compare to simulated FFT.
+- Probably no need scaling as FFT is normalized. Shouldn't see any weird things.
+- First thing to figure out is how to make FFT into a single perfect function. 

@@ -1,0 +1,146 @@
+## Multiple Trajectories per Batch ##
+
+import jax
+import jax.numpy as jnp
+from flax import linen as nn
+from flax.training import train_state
+import optax
+import matplotlib.pyplot as plt
+from jax.experimental.ode import odeint
+import numpy as np  # for random number generation outside JAX
+
+# Initialize random key
+rng = jax.random.PRNGKey(42)
+
+# Constants
+I = 4.667e-10  # Moment of inertia (kg·m²)
+m = 0.0000414  # kg
+fnx = 8.83
+Qx = 22
+c = (m * 2 * jnp.pi * fnx) / Qx  # Damping coefficient
+k = ((2 * jnp.pi * fnx) ** 2) * m  # Stiffness
+
+# Define the system of ODEs
+def equation_of_motion(y, t):
+    x, x_dot = y
+    driving_force = jnp.sin(x)
+    x_ddot = (driving_force - k * x - c * x_dot) / m
+    return jnp.array([x_dot, x_ddot])
+
+# Generate full training data (over [0,1] seconds)
+t_eval = jnp.linspace(0, 5, 500)  # Adjust this to [0,5] if needed
+y0_train = jnp.array([0.1, 0.1])
+solution_train = odeint(equation_of_motion, y0_train, t_eval, rtol=1e-3, atol=1e-3)
+print("Full solution shape:", solution_train.shape)  # (100, 2)
+
+# Calculate true acceleration for reference
+driving_force_train = jnp.sin(solution_train[:, 0])
+x_ddot_train = (driving_force_train - k * solution_train[:, 0] - c * solution_train[:, 1]) / m
+training_data_full = jnp.column_stack((solution_train[:, 0], solution_train[:, 1], x_ddot_train))
+print("Full training data shape:", training_data_full.shape)  # (100, 3)
+
+# Neural Network Definition
+class DRIVINGFORCEPredictor(nn.Module):
+    @nn.compact
+    def __call__(self, x):
+        position = x[:, 0]  # Get position
+        velocity = x[:, 1] / 100.0  # Scale down velocity by 100
+        x_scaled = jnp.column_stack((position, velocity))  # Combine position and scaled velocity
+        x_scaled = nn.Dense(16)(x_scaled)
+        x_scaled = jnp.sin(x_scaled)
+        x_scaled = nn.Dense(8)(x_scaled)
+        x_scaled = jnp.sin(x_scaled)
+        return nn.Dense(1)(x_scaled)  # Output driving force
+
+# Initialize model
+model = DRIVINGFORCEPredictor()
+params = model.init(rng, jnp.ones((1, 2)))
+
+# Optimizer
+optimizer = optax.chain(
+    optax.clip(1.0),
+    optax.adam(learning_rate=1e-3)
+)
+
+state = train_state.TrainState.create(
+    apply_fn=model.apply,
+    params=params,
+    tx=optimizer
+)
+
+# Modified train_step to accept t_eval and use batch initial conditions
+@jax.jit
+def train_step(state, batch, t_eval):
+    def loss_fn(params):
+        def pred_equation_of_motion(y, t):
+            pred_x, pred_x_dot = y
+            inputs = jnp.array([pred_x, pred_x_dot])
+            pred_driving_force = state.apply_fn(params, inputs[None, :])  # Shape (1,2)
+            pred_x_ddot = (pred_driving_force.squeeze() - k * pred_x - c * pred_x_dot) / m
+            return jnp.array([pred_x_dot, pred_x_ddot])
+
+        initial_conditions = batch[0, :2]  # initial pos and vel at t_eval[0]
+        pred_solution = odeint(pred_equation_of_motion, initial_conditions, t_eval - t_eval[0], atol=1e-3, rtol=1e-3)
+        loss = jnp.mean((pred_solution[:, 0] - batch[:, 0]) ** 2 + ((1 / 100)*(pred_solution[:, 1]) - (1 / 100)*(batch[:, 1])) ** 2)
+        return loss
+
+    loss, grads = jax.value_and_grad(loss_fn)(state.params)
+    return state.apply_gradients(grads=grads), loss
+
+# Training loop on multiple trajectories
+num_trajectories = 12  # Number of trajectories to train on each epoch
+for epoch in range(1000):
+    epoch_loss = 0.0  # To accumulate loss from multiple trajectories
+    for _ in range(num_trajectories):
+        t_start_idx = np.random.randint(0, 500)  # Random start point
+        interval_length = np.random.randint(5, 7)  # Small interval length
+        t_end_idx = t_start_idx + interval_length
+
+        # Make sure we don't exceed the bounds of training data
+        if t_end_idx >= 500:
+            continue
+
+        state, loss = train_step(state, training_data_full[t_start_idx:t_end_idx], t_eval[t_start_idx:t_end_idx])
+        epoch_loss += loss
+
+    # Average loss for the epoch
+    avg_loss = epoch_loss / num_trajectories
+    if epoch % 1 == 0:
+        print(f"Epoch {epoch}, Average Loss: {avg_loss:.6f}")
+
+# Testing parameters (can test on the full interval for visualization)
+t_eval_test = jnp.linspace(0, 5, 100)
+y0_test = jnp.array([0.1, 0.1])
+solution_test = odeint(equation_of_motion, y0_test, t_eval_test)
+test_driving_force = jnp.sin(solution_test[:, 0])
+
+# Prepare test data
+x_ddot_test = (test_driving_force - k * solution_test[:, 0] - c * solution_test[:, 1]) / m
+test_data = jnp.column_stack((solution_test[:, 0], solution_test[:, 1], x_ddot_test))
+
+# Predict driving force using the trained model
+pred_driving_force = model.apply(state.params, test_data[:, :2])
+
+# Plotting the results
+plt.figure(figsize=(12, 8))
+plt.scatter(test_data[:, 0], test_driving_force, label='Ground Truth Driving Force', color='green', s=10)
+plt.scatter(test_data[:, 0], pred_driving_force, label='Predicted Driving Force', color='orange', s=10, alpha=0.6)
+plt.title('Driving Force vs Position')
+plt.xlabel('Position (m)')
+plt.ylabel('Driving Force (N)')
+plt.grid()
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+
+plt.figure(figsize=(12, 5))
+plt.plot(t_eval_test, test_driving_force, label='Original Driving Force', color='green')
+plt.plot(t_eval_test, pred_driving_force, label='Predicted Driving Force', color='orange', linestyle='--')
+plt.title('Driving Force vs Time')
+plt.xlabel('Time (s)')
+plt.ylabel('Driving Force (N)')
+plt.grid()
+plt.legend()
+plt.tight_layout()
+plt.show()

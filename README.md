@@ -265,3 +265,10 @@ Attempts at tuning NN:
 - Plot convergence
 - Plot loss on log scale against time
 - Implement 2nd equation and set driving_force as sin(x)sin(theta).
+
+# Updates 18/7/2025 #
+- Successful prediction of f(x) -- Learning rate = 1e-3, no. of trajectories = 12
+- Added 2nd equation in theta
+- Added hidden layer and swish activation functions: more accurate
+- Scaled all variables: theta, theta_dot, x, x_dot
+- No. of trajectories = 17, learning rate = 1e-4, time interval = 5 to 8 time steps: moderately accurate. 

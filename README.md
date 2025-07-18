@@ -268,6 +268,7 @@ Attempts at tuning NN:
 
 # Updates 18/7/2025 #
 - Successful prediction of f(x) -- Learning rate = 1e-3, no. of trajectories = 12
+- Extended t_eval to 5s. 
 - Added 2nd equation in theta
 - Added hidden layer and swish activation functions: more accurate
 - Scaled all variables: theta, theta_dot, x, x_dot

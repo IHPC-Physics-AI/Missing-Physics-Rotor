@@ -258,7 +258,7 @@ Attempts at tuning NN:
 - Applied scaling 1/100 to x_dot in loss calculation. Result: Significantly smaller losses (0.1 to 20+) but not much difference in prediction 
 
 ## Next Steps ##
-- Do muliple trajectories
+- Do multiple trajectories
 - Apply learning rate scheduler
 - Reduce tolerance to check if losses are calculating correctly. Change output layer to jnp.sin for checking
 - Reduce NN, number of neurons. Structure currently too big.
@@ -285,4 +285,10 @@ Attempts at tuning NN:
 - def FFT part as a function, then call it in training loop. Error needs to be done on FFT output.
 - Magnitude of frequency is just some paramter. Take predicted output of FFT and compare to simulated FFT.
 - Probably no need scaling as FFT is normalized. Shouldn't see any weird things.
-- First thing to figure out is how to make FFT into a single perfect function. 
+- First thing to figure out is how to make FFT into a single perfect function.
+
+## Updates 22/7/2025 ##
+- From collaborators' FFT script, window_size = 100 and sampling rate = 1999.99/s
+- Simulation data only runs from 0 to 1s, so I reduced window_size to 0.1s but kept the sampling rate. Thus, t_eval = jnp.linspace(0, 1, 2000).
+- I get 200 time points per FFT window.
+- Attained FFT function. Facing errors when implementing for loss calculation. Shaping and index errors. 

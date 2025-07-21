@@ -288,7 +288,12 @@ Attempts at tuning NN:
 - First thing to figure out is how to make FFT into a single perfect function.
 
 ## Updates 22/7/2025 ##
+### FFT NN Predictor ###
 - From collaborators' FFT script, window_size = 100 and sampling rate = 1999.99/s
 - Simulation data only runs from 0 to 1s, so I reduced window_size to 0.1s but kept the sampling rate. Thus, t_eval = jnp.linspace(0, 1, 2000).
 - I get 200 time points per FFT window.
 - Attained FFT function. Facing errors when implementing for loss calculation. Shaping and index errors. 
+
+### 2D Contour Plot ###
+- Obtained for driving_force = jnp.sin(theta) * jnp.sin(x)
+- Evident deviation of prediction from ground truth 

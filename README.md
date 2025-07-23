@@ -302,4 +302,5 @@ Attempts at tuning NN:
 - First ODE equate -f(x, theta, x_dot, theta_dot) on the right. Second one still positive f.
 - window_size = 50, sampling rate = 2000.
 - Set x, x_dot and theta to 0 for initial conditions. theta mode in FFT plot represents theta_dot. Eg. go to 100s to 150s in experimental FFT plot and identify theta_dot at 100s. Set as initial condition in NN script. Generate data from 100 to 150s the predict driving force based on 50s time duration and window_size = 50s.
-- Will get back on FFT conversion to make frequency same units as original expt data. To ensure scale is consistent. 
+- Will get back on FFT conversion to make frequency same units as original expt data. To ensure scale is consistent.
+- Try driving_force functions in x*theta, x**2*theta, jnp.sin(theta_dot)

@@ -296,4 +296,9 @@ Attempts at tuning NN:
 
 ### 2D Contour Plot ###
 - Obtained for driving_force = jnp.sin(theta) * jnp.sin(x)
-- Evident deviation of prediction from ground truth 
+- Evident deviation of prediction from ground truth
+
+## Next Steps ##
+- First ODE equate -f(x, theta, x_dot, theta_dot) on the right. Second one still positive f.
+- window_size = 50, sampling rate = 2000.
+- Set x, x_dot and theta to 0 for initial conditions. theta mode in FFT plot represents theta_dot. Eg. go to 100s to 150s in experimental FFT plot and identify theta_dot at 100s. Set as initial condition in NN script. Generate data from 100 to 150s the predict driving force based on 50s time duration and window_size = 50s. 

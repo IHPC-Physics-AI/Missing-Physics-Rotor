@@ -313,4 +313,4 @@ Attempts at tuning NN:
 - Used window_size = 10 and fs = 50 for NN. window_size = 50 too large for mini batching method. Results: nan. Requires further tuning. 
 - Explored driving_force = x*theta for original mini batching NN. After 20+ epochs nan also appears.
 - Scaling/normalization suggested by Xianfeng was already done in my code.
-- Not yet started with experimental data is tuning for NN must first be improved. 
+- Not yet started with experimental data because tuning for NN must first be improved. 

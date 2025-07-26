@@ -304,4 +304,13 @@ Attempts at tuning NN:
 - Set x, x_dot and theta to 0 for initial conditions. theta mode in FFT plot represents theta_dot. Eg. go to 100s to 150s in experimental FFT plot and identify theta_dot at 100s. Set as initial condition in NN script. Generate data from 100 to 150s the predict driving force based on 50s time duration and window_size = 50s.
 - Collaborators will get back on FFT conversion to make frequency same units as original expt data. To ensure scale is consistent.
 - Try driving_force functions in x*theta, x**2*theta, jnp.sin(theta_dot)
-- Change sampling frequency from 2000 to 100. Then reduce csv data by 20 times, take 1 point per 20 data points. Reproduce FFT plot and compare with collaborators' plot. 
+- Change sampling frequency from 2000 to 100. Then reduce csv data by 20 times, take 1 point per 20 data points. Reproduce FFT plot and compare with collaborators' plot.
+
+## Updates 26/7/2025
+- Finished downsampling experimental data. FFT plot shows theta mode but not x mode. Increased window_size from 100 to 200 to accomodate for downsampling.
+- Explored window_size and fs for FFT plot of simulated data. For window_size = 10 and 50 and fs = 50, frequency distribution in FFT plot looks more discretized.
+- Inserted negative sign in front of first ODE.
+- Used window_size = 10 and fs = 50 for NN. window_size = 50 too large for mini batching method. Results: nan. Requires further tuning. 
+- Explored driving_force = x*theta for original mini batching NN. After 20+ epochs nan also appears.
+- Scaling/normalization suggested by Xianfeng was already done in my code.
+- Not yet started with experimental data is tuning for NN must first be improved. 

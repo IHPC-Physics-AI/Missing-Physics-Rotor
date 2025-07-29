@@ -325,4 +325,13 @@ Attempts at tuning NN:
 - Original FFT script causing a lot of issues with RAM running out for window_size = 0.2 and fs = 100
 - Made adjustment to fs to account for time_data and now window_size = 0.5. fs now 99.0Hz. Made window correction, amplitude scaling, unit conversion.
 - Inserted -alpha*driving_force into 1st equation of motion. Resulting NN outputs all NaNs. Redid normalization to get finite losses, but computation still crashes. Requires more tuning.
-- NN now only has 1 layer: jnp.sin(x_scaled). Need to play around more with learning rate, activation functions. 
+- NN now only has 1 layer: jnp.sin(x_scaled). Need to play around more with learning rate, activation functions.
+
+## Next Steps ##
+- Print gradients directly 
+- Print means and std of normalized functions in NN
+- Relook at normalization. Values for mean and std are weird. 
+- Figure out where NaNs are coming from. 
+- Should see something at 10Hz in FFT. 
+- No need to do so much overlap because very few points.
+- For FFT, can extend durations to >5s. But keep low sampling rate. Since no decay to 0. Resolution is better if increase sampling rate. 

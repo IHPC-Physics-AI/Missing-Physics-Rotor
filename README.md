@@ -319,4 +319,9 @@ Attempts at tuning NN:
 - Put window_size = 0.1 or 0.2 and fs = 100 for synthetic data. Make sure FFT makes sense.
 - Tune NN until it is accurate for all general forms of driving_force. Focus on scaling.
 - Add -alpha*driving_force to first ODE.
-- Produce contour plots and plot exact points in time of data to compare precisely. 
+- Produce contour plots and plot exact points in time of data to compare precisely.
+
+## Updates 29/7/2025 ##
+- Original FFT script causing a lot of issues with RAM running out for window_size = 0.2 and fs = 100
+- Made adjustment to fs to account for time_data and now window_size = 0.5. fs now 99.0Hz. Made window correction, amplitude scaling, unit conversion.
+- Inserted -alpha*driving_force into 1st equation of motion. Resulting NN outputs all NaNs. Redid normalization to get finite losses, but computation still crashes. Requires more tuning. 

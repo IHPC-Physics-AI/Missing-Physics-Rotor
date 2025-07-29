@@ -324,4 +324,5 @@ Attempts at tuning NN:
 ## Updates 29/7/2025 ##
 - Original FFT script causing a lot of issues with RAM running out for window_size = 0.2 and fs = 100
 - Made adjustment to fs to account for time_data and now window_size = 0.5. fs now 99.0Hz. Made window correction, amplitude scaling, unit conversion.
-- Inserted -alpha*driving_force into 1st equation of motion. Resulting NN outputs all NaNs. Redid normalization to get finite losses, but computation still crashes. Requires more tuning. 
+- Inserted -alpha*driving_force into 1st equation of motion. Resulting NN outputs all NaNs. Redid normalization to get finite losses, but computation still crashes. Requires more tuning.
+- NN now only has 1 layer: jnp.sin(x_scaled). Need to play around more with learning rate, activation functions. 

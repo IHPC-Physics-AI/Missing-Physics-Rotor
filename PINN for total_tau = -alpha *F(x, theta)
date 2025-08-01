@@ -64,7 +64,6 @@ class StableForcePredictor(nn.Module):
     @nn.compact
     def __call__(self, x):
         x_norm = min_max_normalize(x)
-        x_norm = x_norm[:, 0], x_norm[:, 2]
         x = nn.Dense(32)(x_norm)
         x = jax.nn.tanh(x)  # More stable than sin
         x = nn.Dense(16)(x)

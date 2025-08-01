@@ -1,0 +1,196 @@
+## Multiple Trajectories per Batch with Min-Max Normalization ##
+
+import jax
+import jax.numpy as jnp
+from flax import linen as nn
+from flax.training import train_state
+import optax
+import matplotlib.pyplot as plt
+from jax.experimental.ode import odeint
+import numpy as np
+
+# Initialize random key
+rng = jax.random.PRNGKey(42)
+
+# Constants [unchanged]
+I = 4.667e-10
+m = 0.0000414
+mu = 4.76e-4 * I
+c = 1.28e-4
+k = 1.27
+alpha = 1
+
+# Define the system of ODEs [unchanged]
+def equation_of_motion(y, t):
+    theta, theta_dot, x, x_dot = y
+    driving_force = jnp.tanh(x) * jnp.tanh(theta)
+    total_tau = 0 - alpha*driving_force
+    theta_ddot = (total_tau - mu * theta_dot) / I
+    x_ddot = (driving_force - k * x - c * x_dot) / m
+    return jnp.array([theta_dot, theta_ddot, x_dot, x_ddot])
+
+# Generate training data [unchanged]
+t_eval = jnp.linspace(0, 1, 100)
+y0_train = jnp.array([0.1, 0.1, 0.1, 0.1])
+solution_train = odeint(equation_of_motion, y0_train, t_eval, rtol=1e-6, atol=1e-6)
+
+# Calculate min-max normalization parameters
+def get_min_max(data):
+    data_min = jnp.min(data, axis=0)
+    data_max = jnp.max(data, axis=0)
+    # Avoid division by zero for constant features
+    data_range = jnp.where(data_max == data_min, 1.0, data_max - data_min)
+    return data_min, data_range
+
+theta_min, theta_range = get_min_max(solution_train[:, 0])
+theta_dot_min, theta_dot_range = get_min_max(solution_train[:, 1])
+x_min, x_range = get_min_max(solution_train[:, 2])
+x_dot_min, x_dot_range = get_min_max(solution_train[:, 3])
+
+# Min-max normalization function (-1 to 1 range)
+def min_max_normalize(x):
+    theta = 2 * ((x[:, 0] - theta_min) / theta_range) - 1
+    theta_dot = 2 * ((x[:, 1] - theta_dot_min) / theta_dot_range) - 1
+    x_pos = 2 * ((x[:, 2] - x_min) / x_range) - 1
+    x_dot = 2 * ((x[:, 3] - x_dot_min) / x_dot_range) - 1
+    return jnp.column_stack((theta, theta_dot, x_pos, x_dot))
+
+# Inverse normalization for predictions
+def inverse_normalize(normalized, min_val, range_val):
+    return (normalized + 1) * range_val / 2 + min_val
+
+# Neural Network Definition with more stable architecture
+class StableForcePredictor(nn.Module):
+    @nn.compact
+    def __call__(self, x):
+        x_norm = min_max_normalize(x)
+        x_norm = x_norm[:, 0], x_norm[:, 2]
+        x = nn.Dense(32)(x_norm)
+        x = jax.nn.tanh(x)  # More stable than sin
+        x = nn.Dense(16)(x)
+        x = jax.nn.swish(x)
+        x = nn.Dense(8)(x)
+        x = jax.nn.tanh(x)
+        return 0.1*jax.nn.tanh(nn.Dense(1)(x))  # Output force prediction
+
+# Initialize model
+model = StableForcePredictor()
+params = model.init(rng, jnp.ones((1, 4)))
+
+# More conservative optimizer
+optimizer = optax.chain(
+    optax.clip_by_global_norm(0.1),
+    optax.adam(learning_rate=1e-7),
+    optax.add_decayed_weights(1e-4)  # L2 regularization
+)
+
+state = train_state.TrainState.create(
+    apply_fn=model.apply,
+    params=params,
+    tx=optimizer
+)
+
+# Training step with numerical safeguards
+@jax.jit
+def train_step(state, batch, t_eval):
+    def loss_fn(params):
+        def pred_equation_of_motion(y, t):
+
+            pred_force = state.apply_fn(params, y[None, :]).squeeze()
+
+            total_tau = 0 - alpha*pred_force
+            theta_ddot = (total_tau - mu * y[1]) / I
+            x_ddot = (pred_force - k * y[2] - c * y[3]) / m
+
+            return jnp.array([y[1], theta_ddot, y[3], x_ddot])
+
+        y0 = batch[0, :4]
+        pred_solution = odeint(pred_equation_of_motion, y0, t_eval - t_eval[0],
+                              atol=1e-6, rtol=1e-6)
+
+        # Calculate loss on normalized scale
+        pred_norm = min_max_normalize(pred_solution[:, :4])
+        batch_norm = min_max_normalize(batch[:, :4])
+        loss = jnp.mean((pred_norm - batch_norm) ** 2)
+
+        return loss
+
+    loss, grads = jax.value_and_grad(loss_fn)(state.params)
+    # Clip gradients to prevent explosions
+    grads = jax.tree_map(lambda g: jnp.clip(g, -0.1, 0.1), grads)
+    return state.apply_gradients(grads=grads), loss
+
+# Training loop with curriculum learning
+num_trajectories = 10  # Reduced number for stability
+for epoch in range(2000):
+    epoch_loss = 0.0
+    num_successful = 0
+
+    for _ in range(num_trajectories):
+        # Curriculum: start with short intervals, gradually increase
+        if epoch < 500:
+            length = np.random.randint(3, 5)
+        elif epoch < 1000:
+            length = np.random.randint(5, 8)
+        else:
+            length = np.random.randint(8, 12)
+
+        start = np.random.randint(0, 100 - length)
+        batch = solution_train[start:start+length]
+        t_batch = t_eval[start:start+length]
+
+        state, loss = train_step(state, batch, t_batch)
+
+        if jnp.isfinite(loss):
+            epoch_loss += loss
+            num_successful += 1
+
+    if num_successful > 0:
+        avg_loss = epoch_loss / num_successful
+        if epoch % 10 == 0:
+            print(f"Epoch {epoch}, Loss: {avg_loss:.6f}, Successful: {num_successful}/{num_trajectories}")
+            test_solution = odeint(equation_of_motion, y0_train, t_eval)
+            test_force = jnp.tanh(test_solution[:, 2]) * jnp.tanh(test_solution[:, 0])
+
+
+            # Predict using normalized inputs
+            def predict_force(state, y):
+                y_norm = min_max_normalize(y[None, :])
+                return state.apply_fn(state.params, y_norm).squeeze()
+
+            pred_force = jnp.array([predict_force(state, y) for y in test_solution[:, :4]])
+
+            plt.figure(figsize=(12, 5))
+            plt.plot(t_eval, test_force, label='True Force')
+            plt.plot(t_eval, pred_force, label='Predicted Force', linestyle='--')
+            plt.title('Driving Force Prediction with Min-Max Normalization')
+            plt.xlabel('Time (s)')
+            plt.ylabel('Force (N)')
+            plt.legend()
+            plt.grid()
+            plt.show()
+    else:
+        print("Training failed - all trajectories produced NaN")
+        break
+
+# Testing and plotting [unchanged except for normalization]
+test_solution = odeint(equation_of_motion, y0_train, t_eval)
+test_force = jnp.tanh(test_solution[:, 2])
+
+
+# Predict using normalized inputs
+def predict_force(state, y):
+    y_norm = min_max_normalize(y[None, :])
+    return state.apply_fn(state.params, y_norm).squeeze()
+
+pred_force = jnp.array([predict_force(state, y) for y in test_solution[:, :4]])
+
+plt.figure(figsize=(12, 5))
+plt.plot(t_eval, test_force, label='True Force')
+plt.plot(t_eval, pred_force, label='Predicted Force', linestyle='--')
+plt.title('Driving Force Prediction with Min-Max Normalization')
+plt.xlabel('Time (s)')
+plt.ylabel('Force (N)')
+plt.legend()
+plt.grid()
+plt.show()

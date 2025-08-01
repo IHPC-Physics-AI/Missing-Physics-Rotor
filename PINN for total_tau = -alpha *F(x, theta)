@@ -64,8 +64,11 @@ class StableForcePredictor(nn.Module):
     @nn.compact
     def __call__(self, x):
         x_norm = min_max_normalize(x)
+        # angular_position = x_norm[:, 0]
+        # position = x_norm[:, 2] # Get position
+        # x_norm = jnp.column_stack((angular_position, position)) 
         x = nn.Dense(32)(x_norm)
-        x = jax.nn.tanh(x)  # More stable than sin
+        x = jax.nn.tanh(x)  
         x = nn.Dense(16)(x)
         x = jax.nn.swish(x)
         x = nn.Dense(8)(x)

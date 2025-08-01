@@ -337,10 +337,10 @@ Attempts at tuning NN:
 - For FFT, can extend durations to >5s. But keep low sampling rate. Since no decay to 0. Resolution is better if increase sampling rate.
 
 ## Final Update ##
-- FFT function defined well enough to produce desired FFT spectrum. 
 - Attempted min-max normalization, forcing range of variable between -1 to 1.
 - Tried predicting driving_force = jnp.tanh(x) * jnp.tanh(theta)
 - Reduced learning rate and tolerance for odeint (but tolerance must change back to original 1e-3 for all)
 - Enforce NN hiidden and output layers to have tanh, and multiplied a factor 0.1 to output layer from knowing scale of ground truth driving_force.
-- Printed plots of prediction against time of driving_force for every 10 epochs to observe. Prediction is better but losses are increasing. No more NaNs.
-- BIGGEST ISSUES: odeint causes numerical instability and physics equation cause driving_force to be too difficult to predict. 
+- Printed plots of prediction against time of driving_force for every 10 epochs to observe. Prediction is better and losses are decreasing, no longer producing NaN
+- Predictions are better for inputs of NN being only x and theta. Because we know simulated ground_truth driving_force is in x and theta.
+- MAIN ISSUES: odeint causes numerical instability, physics equations cause driving_force to be too hard to predict. 

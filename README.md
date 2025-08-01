@@ -334,4 +334,11 @@ Attempts at tuning NN:
 - Figure out where NaNs are coming from. 
 - Should see something at 10Hz in FFT. 
 - No need to do so much overlap because very few points.
-- For FFT, can extend durations to >5s. But keep low sampling rate. Since no decay to 0. Resolution is better if increase sampling rate. 
+- For FFT, can extend durations to >5s. But keep low sampling rate. Since no decay to 0. Resolution is better if increase sampling rate.
+
+## Final Update ##
+- Attempted min-max normalization, forcing range of variable between -1 to 1.
+- Tried predicting driving_force = jnp.tanh(x) * jnp.tanh(theta)
+- Reduced learning rate and tolerance for odeint (but tolerance must change back to original 1e-3 for all)
+- Enforce NN hiidden and output layers to have tanh, and multiplied a factor 0.1 to output layer from knowing scale of ground truth driving_force.
+- Printed plots of prediction against time of driving_force for every 10 epochs to observe. Prediction is better and losses are decreasing, 

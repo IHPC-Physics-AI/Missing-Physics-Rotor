@@ -344,4 +344,4 @@ Attempts at tuning NN:
 - Printed plots of prediction against time of driving_force for every 10 epochs to observe. Prediction is better and losses are decreasing, no longer producing NaN
 - Predictions are better for inputs of NN being only x and theta. Because we know simulated ground_truth driving_force is in x and theta.
 - MAIN ISSUES: odeint causes numerical instability, physics equations (after introducing total_tau = -alpha*driving_force) cause driving_force to be too hard to predict. 
-- Attempted downsizing for experimental data for 1 in 2 and 1 in 4 then performed FFT. 
+- Attempted downsizing for experimental data for 1 in 2 and 1 in 4 then performed FFT. All look similar to 1 in 20, 1 in 10 where only theta mode can be seen. 
